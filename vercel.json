@@ -1,5 +1,8 @@
 {
   "version": 2,
+  "buildCommand": "npm run vercel-build",
+  "outputDirectory": ".",
+  "installCommand": "npm install",
   "routes": [
     {
       "src": "/static/(.*)",
@@ -19,7 +22,7 @@
   },
   "functions": {
     "manage.py": {
-      "runtime": "python3.9"
+      "runtime": "@vercel/python@3.9"
     }
   }
 }
