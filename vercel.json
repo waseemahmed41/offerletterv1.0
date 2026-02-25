@@ -1,8 +1,11 @@
 {
   "version": 2,
-  "buildCommand": "npm run vercel-build",
-  "outputDirectory": ".",
-  "installCommand": "npm install",
+  "builds": [
+    {
+      "src": "api/index.py",
+      "use": "@vercel/python"
+    }
+  ],
   "routes": [
     {
       "src": "/static/(.*)",
@@ -14,7 +17,7 @@
     },
     {
       "src": "/(.*)",
-      "dest": "/api/index.py"
+      "dest": "api/index.py"
     }
   ],
   "env": {
