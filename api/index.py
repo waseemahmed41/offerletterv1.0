@@ -11,10 +11,9 @@ os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'offer_automation.settings')
 # Get Django application
 application = get_wsgi_application()
 
-# Vercel serverless function
-def handler(event, context):
-    return application(event, context)
+# Vercel serverless function handler
+def handler(request):
+    return application(request)
 
-# Lambda handler
-def lambda_handler(event, context):
-    return handler(event, context)
+# Export the handler for Vercel
+app = handler
