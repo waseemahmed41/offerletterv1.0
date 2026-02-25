@@ -17,4 +17,4 @@ docx2pdf==0.1.8
 flower==0.9.4
 python-celery==5.3.4
 kombu==5.3.4
-billiard==4.1.1
+billiard>=4.1.0
