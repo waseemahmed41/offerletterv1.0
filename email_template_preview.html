@@ -1,0 +1,152 @@
+
+{% load static %}
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>T-HOME Offer Letter</title>
+</head>
+
+<body style="margin:0; padding:0; background-color:#F4F7FB; font-family:Segoe UI, Arial, sans-serif;">
+
+<table width="100%" cellpadding="0" cellspacing="0" style="background-color:#F4F7FB; padding:30px 0;">
+<tr>
+<td align="center">
+
+<!-- Main Container -->
+<table width="650" cellpadding="0" cellspacing="0" style="background:#ffffff; border-radius:12px; overflow:hidden; box-shadow:0 8px 25px rgba(0,0,0,0.08);">
+
+<!-- Header -->
+<tr>
+<td style="background:linear-gradient(135deg,#1F3C68,#162C4E); padding:40px 30px; text-align:center;">
+
+<img src="{% static 'logo/image.png' %}" width="70" style="border-radius:50%; border:3px solid #C9A227; margin-bottom:20px;" alt="T-HOME Logo">
+
+<h1 style="color:#FFFFFF; margin:0; font-size:26px; letter-spacing:1px;">
+Congratulations
+</h1>
+
+<p style="color:#E2C15A; margin-top:10px; font-size:15px;">
+You've received an official offer from T-HOME
+</p>
+
+</td>
+</tr>
+
+<!-- Gold Divider -->
+<tr>
+<td style="height:4px; background:#C9A227;"></td>
+</tr>
+
+<!-- Content -->
+<tr>
+<td style="padding:45px 40px; color:#2C3E50; font-size:15px; line-height:1.7;">
+
+<p style="font-size:20px; font-weight:600; margin-top:0;">
+Dear <span style="color:#1F3C68;">{{candidate_name}}</span>,
+</p>
+
+<p>
+We are delighted to extend to you an offer for the position of 
+<strong style="color:#1F3C68;">{{position}}</strong> intern at T-HOME.
+Your expertise and experience align perfectly with our mission of delivering innovative and trusted fintech solutions.
+</p>
+
+<p>
+Below is a summary of your employment details. The complete offer letter is attached to this email.
+</p>
+
+<!-- Offer Box -->
+<table width="100%" cellpadding="0" cellspacing="0" style="background:#F4F7FB; border-left:5px solid #C9A227; padding:20px; margin:30px 0; border-radius:6px;">
+
+<tr>
+<td style="padding:10px 0; border-bottom:1px solid #E2C15A;">
+<span style="color:#6C7A89; font-weight:600;">Work ID</span>
+<span style="float:right; font-weight:700; color:#C9A227;">{{work_id}}</span>
+</td>
+</tr>
+
+<tr>
+<td style="padding:10px 0; border-bottom:1px solid #E2C15A;">
+<span style="color:#6C7A89; font-weight:600;">Position</span>
+<span style="float:right; font-weight:600;">{{position}}</span>
+</td>
+</tr>
+
+<tr>
+<td style="padding:10px 0; border-bottom:1px solid #E2C15A;">
+<span style="color:#6C7A89; font-weight:600;">Email</span>
+<span style="float:right;">{{email}}</span>
+</td>
+</tr>
+
+<tr>
+<td style="padding:10px 0; border-bottom:1px solid #E2C15A;">
+<span style="color:#6C7A89; font-weight:600;">Phone</span>
+<span style="float:right;">{{phone}}</span>
+</td>
+</tr>
+
+<tr>
+<td style="padding:10px 0;">
+<span style="color:#6C7A89; font-weight:600;">Joining Date</span>
+<span style="float:right; font-weight:600; color:#1F3C68;">{{joining_date}}</span>
+</td>
+</tr>
+
+</table>
+
+<!-- IMPORTANT ATTACHMENT NOTICE -->
+<table width="100%" cellpadding="0" cellspacing="0" style="background:#FFF8E1; border:1px solid #C9A227; border-radius:8px; padding:20px; margin:30px 0;">
+<tr>
+<td style="text-align:center; color:#1F3C68;">
+
+<p style="margin:0; font-weight:700; font-size:16px; color:#C9A227;">
+Important
+</p>
+
+<p style="margin:10px 0 0 0; font-size:14px;">
+Please review the attached Offer Letter carefully.  
+Kindly go through all terms and conditions before confirming your response.
+</p>
+
+</td>
+</tr>
+</table>
+
+<p>
+We look forward to welcoming you to the T-HOME family and building a successful future together.
+</p>
+
+<p style="margin-top:30px;">
+Warm Regards,<br>
+<strong style="color:#1F3C68;">T-HOME HR Team</strong>
+</p>
+
+</td>
+</tr>
+
+<!-- Footer -->
+<tr>
+<td style="background:#162C4E; padding:25px; text-align:center; color:#FFFFFF; font-size:13px;">
+
+<p style="margin:5px 0;">
+© 2026 <span style="color:#C9A227; font-weight:600;">T-HOME</span> | Your Trusted Partner
+</p>
+
+<p style="margin:5px 0; opacity:0.8;">
+This is an automated message from no-reply@company.co.in
+</p>
+
+</td>
+</tr>
+
+</table>
+
+</td>
+</tr>
+</table>
+
+</body>
+</html>

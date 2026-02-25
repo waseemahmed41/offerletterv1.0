@@ -1,0 +1,218 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block title %}Login - Offer Automation System{% endblock %}
+
+{% block extra_css %}
+<style>
+    body {
+        margin: 0;
+        padding: 0;
+        font-family: 'Inter', sans-serif;
+        overflow: hidden;
+    }
+
+    /* ===== Background Image ===== */
+    .login-container {
+        min-height: 100vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        position: relative;
+        background: url('{% static "login/image.png" %}') no-repeat center center;
+        background-size: cover;
+    }
+
+    /* ===== Glass Login Card ===== */
+    .login-card {
+        width: 100%;
+        max-width: 420px;
+        padding: 45px 35px;
+        border-radius: 24px;
+        background: rgba(255,255,255,0.08);
+        backdrop-filter: blur(25px);
+        border: 1px solid rgba(255,255,255,0.2);
+        box-shadow: 0 40px 80px rgba(0,0,0,0.4);
+        transform-style: preserve-3d;
+        transition: all 0.5s ease;
+        position: relative;
+        z-index: 10;
+    }
+
+    .login-card:hover {
+        transform: rotateY(6deg) rotateX(4deg) translateY(-8px);
+    }
+
+    .login-card h1 {
+        color: #ffffff;
+        font-size: 28px;
+        font-weight: 700;
+        text-align: center;
+    }
+
+    .login-card p {
+        text-align: center;
+        color: rgba(255,255,255,0.7);
+        font-size: 14px;
+        margin-bottom: 30px;
+    }
+
+    /* ===== Logo Styling ===== */
+    .logo-container {
+        text-align: center;
+        margin-bottom: 25px;
+    }
+
+    .logo {
+        width: 80px;
+        height: 80px;
+        border-radius: 50%;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        box-shadow: 0 10px 25px rgba(102,126,234,0.3);
+        transition: all 0.3s ease;
+        animation: logoFloat 3s ease-in-out infinite;
+        overflow: hidden;
+    }
+
+    .logo-img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        border-radius: 50%;
+    }
+
+    .logo:hover {
+        transform: scale(1.05) rotate(5deg);
+        box-shadow: 0 15px 35px rgba(102,126,234,0.4);
+    }
+
+    @keyframes logoFloat {
+        0%, 100% { transform: translateY(0px); }
+        50% { transform: translateY(-10px); }
+    }
+
+    /* ===== Inputs ===== */
+    .input-group {
+        margin-bottom: 20px;
+    }
+
+    .input-group input {
+        width: 100%;
+        padding: 14px 16px;
+        border-radius: 14px;
+        border: none;
+        outline: none;
+        background: rgba(255,255,255,0.15);
+        color: #fff;
+        font-size: 14px;
+        transition: all 0.3s ease;
+    }
+
+    .input-group input::placeholder {
+        color: rgba(255,255,255,0.6);
+    }
+
+    .input-group input:focus {
+        background: rgba(255,255,255,0.25);
+        box-shadow: 0 0 15px rgba(102,126,234,0.8);
+        transform: translateY(-2px);
+    }
+
+    /* ===== Button ===== */
+    .btn-login {
+        width: 100%;
+        padding: 14px;
+        border-radius: 14px;
+        border: none;
+        font-weight: 600;
+        font-size: 15px;
+        background: linear-gradient(135deg, #667eea, #764ba2);
+        color: #fff;
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
+
+    .btn-login:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 12px 30px rgba(118,75,162,0.6);
+    }
+
+    /* ===== Extra Links ===== */
+    .extra-links {
+        display: flex;
+        justify-content: space-between;
+        margin-top: 10px;
+        font-size: 13px;
+        color: rgba(255,255,255,0.8);
+    }
+
+    .extra-links a {
+        color: #fff;
+        text-decoration: none;
+        transition: 0.3s;
+    }
+
+    .extra-links a:hover {
+        color: #a5b4fc;
+    }
+
+    .footer-text {
+        text-align: center;
+        margin-top: 25px;
+        font-size: 12px;
+        color: rgba(255,255,255,0.6);
+    }
+
+    @media(max-width: 500px){
+        .login-card{
+            padding:30px 20px;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="login-container">
+    <div class="login-card">
+
+        <div class="logo-container">
+            <div class="logo">
+                <img src="{% static 'logo/image.png' %}" alt="Offer Automation Logo" class="logo-img">
+            </div>
+        </div>
+
+        <h1>Offer Automation</h1>
+        <p>Professional Offer Letter Management System</p>
+
+        <form method="post">
+            {% csrf_token %}
+
+            <div class="input-group">
+                {{ form.username }}
+            </div>
+
+            <div class="input-group">
+                {{ form.password }}
+            </div>
+
+            <div class="extra-links">
+                <label>
+                    <input type="checkbox"> Remember me
+                </label>
+                <a href="#">Forgot Password?</a>
+            </div>
+
+            <button type="submit" class="btn-login mt-4">
+                Sign In
+            </button>
+        </form>
+
+        <div class="footer-text">
+            © 2026 Offer Automation System <br>
+            Built for HR Professionals
+        </div>
+
+    </div>
+</div>
+{% endblock %}

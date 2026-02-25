@@ -1,0 +1,18 @@
+OFFER LETTER
+
+Date: {{letter_date}}
+
+Dear {{name}},
+
+We are pleased to offer you the position of {{role}} at our company.
+
+Details:
+- Work ID: {{work_id}}
+- Phone: {{phone}}
+- Email: {{email}}
+- Joining Date: {{joining_date}}
+
+We look forward to having you join our team.
+
+Best regards,
+HR Team

@@ -1,0 +1,196 @@
+import os
+import pandas as pd
+from django.utils import timezone
+from docx import Document
+from docx2pdf import convert
+from django.core.files.storage import default_storage
+from django.core.files.base import ContentFile
+from django.conf import settings
+from .models import Candidate, Template, OfferLetter
+
+def process_docx_template(template_path, output_path, data):
+    """Process DOCX template with placeholder replacement"""
+    try:
+        doc = Document(template_path)
+        
+        # Replace text in paragraphs
+        for paragraph in doc.paragraphs:
+            for key, value in data.items():
+                if key in paragraph.text:
+                    full_text = paragraph.text
+                    new_text = full_text.replace(key, str(value))
+                    
+                    # Clear all existing runs
+                    for i in range(len(paragraph.runs) - 1, -1, -1):
+                        paragraph._element.remove(paragraph.runs[i]._element)
+                    
+                    # Add new run with modified text
+                    paragraph.add_run(new_text)
+        
+        # Replace text in tables
+        for table in doc.tables:
+            for row in table.rows:
+                for cell in row.cells:
+                    for key, value in data.items():
+                        if key in cell.text:
+                            full_text = cell.text
+                            new_text = full_text.replace(key, str(value))
+                            
+                            # Reset cell content
+                            cell._element.xml = '<w:tc><w:p/></w:tc>'
+                            cell.paragraphs[0].add_run(new_text)
+        
+        # Save the document
+        doc.save(output_path)
+        return True
+        
+    except Exception as e:
+        print(f"Error processing DOCX: {str(e)}")
+        return False
+
+def convert_docx_to_pdf(docx_path, pdf_path):
+    """Convert DOCX file to PDF"""
+    try:
+        convert(docx_path, pdf_path)
+        return True
+    except Exception as e:
+        print(f"Error converting DOCX to PDF: {str(e)}")
+        return False
+
+def generate_offer_letter(candidate, template):
+    """Generate offer letter for a candidate"""
+    try:
+        # Prepare data for template
+        data = {
+            '{{name}}': candidate.name,
+            '{{phone}}': candidate.phone,
+            '{{email}}': candidate.email,
+            '{{role}}': candidate.role,
+            '{{letter_date}}': candidate.letter_date.strftime('%d %B %Y'),
+            '{{joining_date}}': candidate.joining_date.strftime('%d %B %Y'),
+            '{{work_id}}': candidate.work_id,
+        }
+        
+        # Generate temporary DOCX filename
+        temp_docx_filename = f"temp_offer_{candidate.work_id}.docx"
+        temp_docx_path = os.path.join(settings.MEDIA_ROOT, 'temp', temp_docx_filename)
+        
+        # Generate final PDF filename
+        pdf_filename = f"offer_{candidate.work_id}.pdf"
+        pdf_path = os.path.join(settings.MEDIA_ROOT, 'offer_letters', 'pdf', pdf_filename)
+        
+        # Ensure directories exist
+        os.makedirs(os.path.dirname(temp_docx_path), exist_ok=True)
+        os.makedirs(os.path.dirname(pdf_path), exist_ok=True)
+        
+        # Process template to temporary DOCX
+        template_path = template.file.path
+        success = process_docx_template(template_path, temp_docx_path, data)
+        
+        if success:
+            # Convert DOCX to PDF
+            pdf_success = convert_docx_to_pdf(temp_docx_path, pdf_path)
+            
+            if pdf_success and os.path.exists(pdf_path):
+                # Save offer letter record with PDF only
+                with open(pdf_path, 'rb') as pdf_file:
+                    offer_letter = OfferLetter.objects.create(
+                        candidate_id=candidate.id,
+                        template_id=template.id,
+                        candidate_work_id=candidate.work_id,
+                        template_name=template.name,
+                        pdf_file=ContentFile(pdf_file.read(), pdf_filename)
+                    )
+                
+                # Clean up temporary DOCX file
+                if os.path.exists(temp_docx_path):
+                    os.remove(temp_docx_path)
+                
+                # Update candidate status
+                candidate.status = 'offer_generated'
+                candidate.save(using='neon')
+                
+                return offer_letter
+            else:
+                print(f"PDF conversion failed for {candidate.work_id}")
+                return None
+        
+        return None
+        
+    except Exception as e:
+        print(f"Error generating offer letter: {str(e)}")
+        return None
+
+def get_template_for_role(role):
+    """Get appropriate template for a role"""
+    # Convert role display name to role key
+    role_mapping = {
+        'Frontend Developer': 'frontend',
+        'Backend Developer': 'backend',
+        'Machine Learning Engineer': 'machine_learning',
+        'Full Stack Developer': 'full_stack',
+        'UI/UX Designer': 'ui_ux',
+        'Digital Marketing': 'digital_marketing',
+        'PR Specialist': 'pr',
+        'Content Writer': 'content',
+        'Video Editor': 'video_editor',
+    }
+    
+    role_key = role_mapping.get(role, None)
+    
+    # First try to find role-specific template
+    if role_key:
+        template = Template.objects.using('neon').filter(role=role_key, is_active=True).first()
+        if template:
+            return template
+    
+    # Fallback to general template
+    return Template.objects.using('neon').filter(role__isnull=True, is_active=True).first()
+
+def process_bulk_upload(file, created_by):
+    """Process bulk upload of candidates from CSV/Excel"""
+    try:
+        # Read file based on extension
+        if file.name.endswith('.csv'):
+            df = pd.read_csv(file)
+        elif file.name.endswith(('.xlsx', '.xls')):
+            df = pd.read_excel(file)
+        else:
+            return None, "Unsupported file format"
+        
+        # Validate required columns
+        required_columns = ['name', 'email', 'phone', 'role', 'joining_date']
+        missing_columns = [col for col in required_columns if col not in df.columns]
+        
+        if missing_columns:
+            return None, f"Missing required columns: {', '.join(missing_columns)}"
+        
+        # Process candidates
+        candidates = []
+        errors = []
+        
+        for index, row in df.iterrows():
+            try:
+                candidate_data = {
+                    'name': str(row['name']).strip(),
+                    'email': str(row['email']).strip(),
+                    'phone': str(row['phone']).strip(),
+                    'role': str(row['role']).strip(),
+                    'letter_date': timezone.now().date(),
+                    'joining_date': pd.to_datetime(row['joining_date']).date(),
+                    'created_by_id': created_by.id,
+                    'created_by_username': created_by.username,
+                }
+                
+                # Create candidate (work_id will be auto-generated)
+                candidate = Candidate(**candidate_data)
+                candidate.save(using='neon')
+                candidates.append(candidate)
+                
+            except Exception as e:
+                errors.append(f"Row {index + 1}: {str(e)}")
+        
+        return candidates, errors
+        
+    except Exception as e:
+        return None, str(e)

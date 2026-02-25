@@ -1,0 +1,668 @@
+{% extends 'base.html' %}
+
+{% block title %}Dashboard - Offer Automation System{% endblock %}
+
+{% block extra_css %}
+<style>
+:root {
+  --primary-gradient: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+  --secondary-gradient: linear-gradient(135deg, #f59e0b 0%, #f97316 100%);
+  --success-gradient: linear-gradient(135deg, #10b981 0%, #059669 100%);
+  --glass-bg: rgba(255, 255, 255, 0.7);
+  --glass-border: rgba(255, 255, 255, 0.3);
+  --shadow-soft: 0 4px 20px -5px rgba(0, 0, 0, 0.1);
+  --shadow-hover: 0 20px 40px -10px rgba(0, 0, 0, 0.15);
+}
+
+.dashboard-container {
+  background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 50%, #cbd5e1 100%);
+  min-height: 100vh;
+  position: relative;
+  overflow-x: hidden;
+}
+
+.dashboard-container::before {
+  content: '';
+  position: absolute;
+  top: -50%;
+  right: -20%;
+  width: 80%;
+  height: 80%;
+  background: radial-gradient(circle, rgba(99, 102, 241, 0.1) 0%, transparent 70%);
+  border-radius: 50%;
+  animation: float 20s ease-in-out infinite;
+}
+
+@keyframes float {
+  0%, 100% { transform: translateY(0px) rotate(0deg); }
+  50% { transform: translateY(-30px) rotate(180deg); }
+}
+
+.sidebar {
+  background: var(--glass-bg);
+  backdrop-filter: blur(20px);
+  border-right: 1px solid var(--glass-border);
+  box-shadow: var(--shadow-soft);
+  position: relative;
+  z-index: 10;
+}
+
+.nav-item {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  border-radius: 16px;
+  margin: 6px 0;
+  position: relative;
+  overflow: hidden;
+}
+
+.nav-item::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: var(--primary-gradient);
+  transition: left 0.3s ease;
+  z-index: -1;
+}
+
+.nav-item:hover::before {
+  left: 0;
+}
+
+.nav-item:hover {
+  color: white;
+  transform: translateX(8px) scale(1.02);
+  box-shadow: var(--shadow-soft);
+}
+
+.nav-item.active {
+  background: var(--primary-gradient);
+  color: white;
+  box-shadow: var(--shadow-soft);
+  transform: scale(1.02);
+}
+
+.stat-card {
+  background: var(--glass-bg);
+  backdrop-filter: blur(20px);
+  border: 1px solid var(--glass-border);
+  border-radius: 24px;
+  padding: 28px;
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+  overflow: hidden;
+  box-shadow: var(--shadow-soft);
+}
+
+.stat-card::before {
+  content: '';
+  position: absolute;
+  top: -50%;
+  right: -50%;
+  width: 100%;
+  height: 100%;
+  background: radial-gradient(circle, rgba(255, 255, 255, 0.1) 0%, transparent 70%);
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.stat-card:hover::before {
+  opacity: 1;
+}
+
+.stat-card:hover {
+  transform: translateY(-8px) scale(1.02);
+  box-shadow: var(--shadow-hover);
+  border-color: rgba(99, 102, 241, 0.3);
+}
+
+.stat-icon {
+  width: 72px;
+  height: 72px;
+  border-radius: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 28px;
+  color: white;
+  margin-bottom: 20px;
+  position: relative;
+  box-shadow: 0 8px 20px -5px rgba(0, 0, 0, 0.2);
+}
+
+.stat-icon::after {
+  content: '';
+  position: absolute;
+  top: -2px;
+  left: -2px;
+  right: -2px;
+  bottom: -2px;
+  background: inherit;
+  border-radius: inherit;
+  filter: blur(8px);
+  opacity: 0.4;
+  z-index: -1;
+}
+
+.action-card {
+  background: var(--glass-bg);
+  backdrop-filter: blur(20px);
+  border: 1px solid var(--glass-border);
+  border-radius: 24px;
+  padding: 32px;
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+  overflow: hidden;
+  box-shadow: var(--shadow-soft);
+}
+
+.action-card:hover {
+  transform: translateY(-6px) scale(1.01);
+  box-shadow: var(--shadow-hover);
+}
+
+.action-card.featured {
+  border: 2px solid rgba(99, 102, 241, 0.3);
+  background: linear-gradient(135deg, rgba(99, 102, 241, 0.05) 0%, rgba(139, 92, 246, 0.05) 100%);
+}
+
+.btn-premium {
+  background: var(--primary-gradient);
+  color: white;
+  padding: 14px 28px;
+  border-radius: 16px;
+  font-weight: 600;
+  font-size: 15px;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 8px 20px -5px rgba(99, 102, 241, 0.3);
+  position: relative;
+  overflow: hidden;
+}
+
+.btn-premium::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+  transition: left 0.5s ease;
+}
+
+.btn-premium:hover::before {
+  left: 100%;
+}
+
+.btn-premium:hover {
+  transform: translateY(-3px) scale(1.05);
+  box-shadow: 0 12px 30px -5px rgba(99, 102, 241, 0.4);
+}
+
+.candidate-row {
+  background: var(--glass-bg);
+  backdrop-filter: blur(10px);
+  border: 1px solid var(--glass-border);
+  border-radius: 16px;
+  padding: 16px;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  margin: 8px 0;
+}
+
+.candidate-row:hover {
+  transform: translateX(6px) scale(1.01);
+  box-shadow: var(--shadow-soft);
+  border-color: rgba(99, 102, 241, 0.3);
+}
+
+.avatar-gradient {
+  background: var(--primary-gradient);
+  box-shadow: 0 4px 15px -3px rgba(99, 102, 241, 0.3);
+}
+
+.status-pill {
+  padding: 6px 16px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  transition: all 0.2s ease;
+}
+
+.status-pill:hover {
+  transform: scale(1.05);
+}
+
+.status-pending { 
+  background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%); 
+  color: #92400e;
+  box-shadow: 0 2px 8px -2px rgba(245, 158, 11, 0.3);
+}
+
+.status-offer_sent { 
+  background: linear-gradient(135deg, #d1fae5 0%, #a7f3d0 100%); 
+  color: #065f46;
+  box-shadow: 0 2px 8px -2px rgba(16, 185, 129, 0.3);
+}
+
+.modal-overlay {
+  background: rgba(0, 0, 0, 0.4);
+  backdrop-filter: blur(8px);
+}
+
+.modal-content {
+  background: var(--glass-bg);
+  backdrop-filter: blur(30px);
+  border: 1px solid var(--glass-border);
+  border-radius: 28px;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+}
+
+@media (max-width: 768px) {
+  .sidebar {
+    transform: translateX(-100%);
+    transition: transform 0.3s ease;
+  }
+  
+  .sidebar.open {
+    transform: translateX(0);
+  }
+  
+  .stat-card {
+    padding: 20px;
+  }
+  
+  .action-card {
+    padding: 24px;
+  }
+}
+
+.fade-in {
+  animation: fadeIn 0.6s ease-out;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.stagger-1 { animation-delay: 0.1s; }
+.stagger-2 { animation-delay: 0.2s; }
+.stagger-3 { animation-delay: 0.3s; }
+.stagger-4 { animation-delay: 0.4s; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="dashboard-container flex relative">
+  <!-- Mobile Menu Toggle -->
+  <button class="lg:hidden fixed top-4 left-4 z-50 p-3 bg-white/80 backdrop-blur-lg rounded-xl shadow-lg" onclick="toggleSidebar()">
+    <i class="fas fa-bars text-gray-700"></i>
+  </button>
+
+  <!-- Sidebar -->
+  <div id="sidebar" class="sidebar w-72 min-h-screen p-6 fixed lg:relative lg:translate-x-0 -translate-x-full transition-transform duration-300 z-40">
+    <div class="mb-10 fade-in">
+      <div class="flex items-center space-x-4">
+        <div class="w-14 h-14 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-2xl flex items-center justify-center shadow-lg">
+          <i class="fas fa-briefcase text-white text-xl"></i>
+        </div>
+        <div>
+          <h2 class="text-xl font-bold text-gray-800">Offer Automation</h2>
+          <p class="text-sm text-gray-600">Welcome back, {{ user.first_name|default:user.username }}</p>
+        </div>
+      </div>
+    </div>
+    
+    <nav class="space-y-2">
+      <a href="{% url 'offers:dashboard' %}" class="nav-item active flex items-center space-x-4 p-4 text-gray-700 relative">
+        <i class="fas fa-tachometer-alt w-5 text-lg"></i>
+        <span class="font-medium">Dashboard</span>
+      </a>
+      <a href="{% url 'offers:create_offer' %}" class="nav-item flex items-center space-x-4 p-4 text-gray-700 relative">
+        <i class="fas fa-plus-circle w-5 text-lg"></i>
+        <span class="font-medium">Create Offer</span>
+      </a>
+      <a href="{% url 'offers:bulk_upload' %}" class="nav-item flex items-center space-x-4 p-4 text-gray-700 relative">
+        <i class="fas fa-upload w-5 text-lg"></i>
+        <span class="font-medium">Bulk Upload</span>
+      </a>
+      <a href="{% url 'offers:candidate_list' %}" class="nav-item flex items-center space-x-4 p-4 text-gray-700 relative">
+        <i class="fas fa-users w-5 text-lg"></i>
+        <span class="font-medium">Candidates</span>
+      </a>
+      <a href="{% url 'offers:candidate_list' %}?status=pending" class="nav-item flex items-center space-x-4 p-4 text-gray-700 relative">
+        <i class="fas fa-clock w-5 text-lg"></i>
+        <span class="font-medium">Pending Offers</span>
+      </a>
+      <a href="{% url 'offers:candidate_list' %}?status=offer_sent" class="nav-item flex items-center space-x-4 p-4 text-gray-700 relative">
+        <i class="fas fa-envelope w-5 text-lg"></i>
+        <span class="font-medium">Sent Offers</span>
+      </a>
+    </nav>
+    
+    <div class="mt-auto pt-8">
+      <a href="{% url 'accounts:login' %}" class="flex items-center space-x-4 p-4 text-red-600 hover:bg-red-50/80 rounded-xl transition-all duration-300 backdrop-blur-sm">
+        <i class="fas fa-sign-out-alt w-5 text-lg"></i>
+        <span class="font-medium">Logout</span>
+      </a>
+    </div>
+  </div>
+  
+  <!-- Main Content -->
+  <div class="flex-1 p-4 lg:p-8">
+    <!-- Header -->
+    <div class="mb-10 fade-in">
+      <h1 class="text-4xl lg:text-5xl font-bold text-gray-800 mb-3 bg-gradient-to-r from-gray-800 to-gray-600 bg-clip-text text-transparent">
+        Dashboard
+      </h1>
+      <p class="text-lg text-gray-600">Manage your offer letters and candidates with precision and ease</p>
+    </div>
+    
+    <!-- Statistics Cards -->
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-10">
+      <div class="stat-card fade-in stagger-1">
+        <div class="stat-icon bg-gradient-to-br from-blue-500 to-blue-600">
+          <i class="fas fa-users"></i>
+        </div>
+        <h3 class="text-3xl font-bold text-gray-800 mb-2">{{ total_candidates }}</h3>
+        <p class="text-gray-600 font-medium">Total Candidates</p>
+        <div class="mt-4 text-sm text-blue-600 font-medium">
+          <i class="fas fa-arrow-up mr-1"></i>
+          <span>12% from last month</span>
+        </div>
+      </div>
+      
+      <div class="stat-card fade-in stagger-2">
+        <div class="stat-icon bg-gradient-to-br from-amber-500 to-amber-600">
+          <i class="fas fa-clock"></i>
+        </div>
+        <h3 class="text-3xl font-bold text-gray-800 mb-2">{{ pending_candidates }}</h3>
+        <p class="text-gray-600 font-medium">Pending Offers</p>
+        <div class="mt-4 text-sm text-amber-600 font-medium">
+          <i class="fas fa-exclamation-triangle mr-1"></i>
+          <span>Requires action</span>
+        </div>
+      </div>
+      
+      <div class="stat-card fade-in stagger-3">
+        <div class="stat-icon bg-gradient-to-br from-indigo-500 to-indigo-600">
+          <i class="fas fa-file-alt"></i>
+        </div>
+        <h3 class="text-3xl font-bold text-gray-800 mb-2">{{ offer_generated }}</h3>
+        <p class="text-gray-600 font-medium">Offers Generated</p>
+        <div class="mt-4 text-sm text-indigo-600 font-medium">
+          <i class="fas fa-check-circle mr-1"></i>
+          <span>Ready to send</span>
+        </div>
+      </div>
+      
+      <div class="stat-card fade-in stagger-4">
+        <div class="stat-icon bg-gradient-to-br from-emerald-500 to-emerald-600">
+          <i class="fas fa-envelope"></i>
+        </div>
+        <h3 class="text-3xl font-bold text-gray-800 mb-2">{{ offer_sent }}</h3>
+        <p class="text-gray-600 font-medium">Offers Sent</p>
+        <div class="mt-4 text-sm text-emerald-600 font-medium">
+          <i class="fas fa-paper-plane mr-1"></i>
+          <span>Successfully delivered</span>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Quick Actions -->
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-10">
+      <!-- Create Offer Card -->
+      <div class="action-card featured fade-in stagger-1">
+        <div class="flex items-center mb-6">
+          <div class="w-12 h-12 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-xl flex items-center justify-center mr-4">
+            <i class="fas fa-plus-circle text-white text-xl"></i>
+          </div>
+          <h3 class="text-xl font-bold text-gray-800">Create New Offer</h3>
+        </div>
+        <p class="text-gray-600 mb-6 leading-relaxed">Create and send a personalized offer letter to an individual candidate with our streamlined workflow.</p>
+        <a href="{% url 'offers:create_offer' %}" class="btn-premium inline-flex items-center justify-center w-full">
+          <i class="fas fa-file-contract mr-2"></i>
+          Create Offer
+        </a>
+      </div>
+      
+      <!-- Bulk Upload Card -->
+      <div class="action-card fade-in stagger-2">
+        <div class="flex items-center mb-6">
+          <div class="w-12 h-12 bg-gradient-to-br from-amber-500 to-orange-600 rounded-xl flex items-center justify-center mr-4">
+            <i class="fas fa-upload text-white text-xl"></i>
+          </div>
+          <h3 class="text-xl font-bold text-gray-800">Bulk Upload</h3>
+        </div>
+        <p class="text-gray-600 mb-6 leading-relaxed">Upload CSV or Excel file with multiple candidate details for batch processing.</p>
+        <a href="{% url 'offers:bulk_upload' %}" class="btn-premium inline-flex items-center justify-center w-full">
+          <i class="fas fa-cloud-upload-alt mr-2"></i>
+          Upload File
+        </a>
+      </div>
+      
+      <!-- Recent Candidates -->
+      <div class="action-card fade-in stagger-3">
+        <div class="flex items-center mb-6">
+          <div class="w-12 h-12 bg-gradient-to-br from-emerald-500 to-teal-600 rounded-xl flex items-center justify-center mr-4">
+            <i class="fas fa-history text-white text-xl"></i>
+          </div>
+          <h3 class="text-xl font-bold text-gray-800">Recent Candidates</h3>
+        </div>
+        <div class="space-y-3 max-h-64 overflow-y-auto">
+          {% for candidate in recent_candidates %}
+          <div class="candidate-row">
+            <div class="flex items-center justify-between">
+              <div class="flex items-center space-x-3">
+                <div class="w-10 h-10 avatar-gradient rounded-full flex items-center justify-center">
+                  <span class="text-white font-bold text-sm">{{ candidate.name.0|upper }}</span>
+                </div>
+                <div>
+                  <p class="font-semibold text-gray-800 text-sm">{{ candidate.name }}</p>
+                  <p class="text-xs text-gray-600">{{ candidate.role }}</p>
+                </div>
+              </div>
+              <div class="flex items-center space-x-2">
+                <span class="status-pill status-{{ candidate.status }}">{{ candidate.status|default:"pending" }}</span>
+                <button onclick="showCandidateDetails('{{ candidate.id }}')" class="p-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors">
+                  <i class="fas fa-eye text-xs"></i>
+                </button>
+              </div>
+            </div>
+          </div>
+          {% empty %}
+          <div class="text-center py-8">
+            <i class="fas fa-users text-4xl text-gray-300 mb-3"></i>
+            <p class="text-gray-500">No candidates yet</p>
+          </div>
+          {% endfor %}
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Candidate Details Modal -->
+<div id="candidateModal" class="modal-overlay fixed inset-0 flex items-center justify-center z-50 hidden">
+  <div class="modal-content p-8 m-4 max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+    <div class="flex justify-between items-center mb-8">
+      <h3 class="text-2xl font-bold text-gray-800">Candidate Details</h3>
+      <button onclick="closeCandidateModal()" class="text-gray-500 hover:text-gray-700 transition-colors">
+        <i class="fas fa-times text-xl"></i>
+      </button>
+    </div>
+    
+    <div id="candidateDetails" class="space-y-6">
+      <!-- Content will be loaded here -->
+    </div>
+    
+    <div class="flex justify-end space-x-4 mt-8">
+      <button onclick="closeCandidateModal()" class="px-6 py-3 bg-gray-500 text-white rounded-xl hover:bg-gray-600 transition-colors">
+        Close
+      </button>
+      <button id="generateBtn" onclick="generateAndSendOffer()" class="btn-premium">
+        <i class="fas fa-paper-plane mr-2"></i>
+        Generate & Send
+      </button>
+    </div>
+  </div>
+</div>
+
+<script>
+  let currentCandidateId = null;
+  
+  function toggleSidebar() {
+    const sidebar = document.getElementById('sidebar');
+    sidebar.classList.toggle('translate-x-0');
+    sidebar.classList.toggle('-translate-x-full');
+  }
+  
+  function showCandidateDetails(candidateId) {
+    currentCandidateId = candidateId;
+    
+    fetch(`/dashboard/candidate/${candidateId}/`, {
+      headers: {
+        'X-Requested-With': 'XMLHttpRequest'
+      }
+    })
+    .then(response => response.json())
+    .then(data => {
+      const detailsHtml = `
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div class="space-y-4">
+            <div class="p-4 bg-gray-50 rounded-xl">
+              <label class="text-sm font-medium text-gray-600 block mb-1">Work ID</label>
+              <p class="font-semibold text-gray-800 text-lg">${data.work_id}</p>
+            </div>
+            <div class="p-4 bg-gray-50 rounded-xl">
+              <label class="text-sm font-medium text-gray-600 block mb-1">Status</label>
+              <p><span class="status-pill status-${data.status}">${data.status.replace('_', ' ')}</span></p>
+            </div>
+            <div class="p-4 bg-gray-50 rounded-xl">
+              <label class="text-sm font-medium text-gray-600 block mb-1">Full Name</label>
+              <p class="font-semibold text-gray-800 text-lg">${data.name}</p>
+            </div>
+          </div>
+          
+          <div class="space-y-4">
+            <div class="p-4 bg-gray-50 rounded-xl">
+              <label class="text-sm font-medium text-gray-600 block mb-1">Email</label>
+              <p class="font-semibold text-gray-800">${data.email}</p>
+            </div>
+            <div class="p-4 bg-gray-50 rounded-xl">
+              <label class="text-sm font-medium text-gray-600 block mb-1">Phone</label>
+              <p class="font-semibold text-gray-800">${data.phone}</p>
+            </div>
+            <div class="p-4 bg-gray-50 rounded-xl">
+              <label class="text-sm font-medium text-gray-600 block mb-1">Role</label>
+              <p class="font-semibold text-gray-800">${data.role}</p>
+            </div>
+          </div>
+        </div>
+        
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div class="p-4 bg-gray-50 rounded-xl">
+            <label class="text-sm font-medium text-gray-600 block mb-1">Letter Date</label>
+            <p class="font-semibold text-gray-800">${data.letter_date}</p>
+          </div>
+          <div class="p-4 bg-gray-50 rounded-xl">
+            <label class="text-sm font-medium text-gray-600 block mb-1">Joining Date</label>
+            <p class="font-semibold text-gray-800">${data.joining_date}</p>
+          </div>
+        </div>
+        
+        <div class="p-4 bg-gray-50 rounded-xl">
+          <label class="text-sm font-medium text-gray-600 block mb-1">Created At</label>
+          <p class="font-semibold text-gray-800">${data.created_at}</p>
+        </div>
+      `;
+      
+      document.getElementById('candidateDetails').innerHTML = detailsHtml;
+      
+      const generateBtn = document.getElementById('generateBtn');
+      if (data.status === 'offer_sent' || data.status === 'accepted') {
+        generateBtn.disabled = true;
+        generateBtn.classList.add('opacity-50', 'cursor-not-allowed');
+        generateBtn.innerHTML = '<i class="fas fa-check mr-2"></i>Already Sent';
+      } else {
+        generateBtn.disabled = false;
+        generateBtn.classList.remove('opacity-50', 'cursor-not-allowed');
+        generateBtn.innerHTML = '<i class="fas fa-paper-plane mr-2"></i>Generate & Send';
+      }
+      
+      document.getElementById('candidateModal').classList.remove('hidden');
+    })
+    .catch(error => {
+      console.error('Error:', error);
+      alert('Error loading candidate details');
+    });
+  }
+  
+  function closeCandidateModal() {
+    document.getElementById('candidateModal').classList.add('hidden');
+    currentCandidateId = null;
+  }
+  
+  function generateAndSendOffer() {
+    if (!currentCandidateId) return;
+    
+    const generateBtn = document.getElementById('generateBtn');
+    generateBtn.disabled = true;
+    generateBtn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Processing...';
+    
+    fetch('/dashboard/generate-and-send/', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-CSRFToken': getCookie('csrftoken'),
+      },
+      body: JSON.stringify({
+        candidate_id: currentCandidateId
+      })
+    })
+    .then(response => response.json())
+    .then(data => {
+      if (data.success) {
+        alert(data.message);
+        closeCandidateModal();
+        setTimeout(() => window.location.reload(), 1000);
+      } else {
+        alert('Error: ' + data.error);
+      }
+    })
+    .catch(error => {
+      console.error('Error:', error);
+      alert('Error generating and sending offer');
+    })
+    .finally(() => {
+      generateBtn.disabled = false;
+      generateBtn.innerHTML = '<i class="fas fa-paper-plane mr-2"></i>Generate & Send';
+    });
+  }
+  
+  function getCookie(name) {
+    let cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+      const cookies = document.cookie.split(';');
+      for (let i = 0; i < cookies.length; i++) {
+        const cookie = cookies[i].trim();
+        if (cookie.substring(0, name.length + 1) === (name + '=')) {
+          cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+          break;
+        }
+      }
+    }
+    return cookieValue;
+  }
+  
+  document.getElementById('candidateModal').addEventListener('click', function(e) {
+    if (e.target === this) {
+      closeCandidateModal();
+    }
+  });
+</script>
+{% endblock %}

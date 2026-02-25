@@ -1,0 +1,1209 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Dashboard - Offer Automation System{% endblock %}
+
+{% block extra_css %}
+<style>
+:root {
+  --primary-gradient: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+  --secondary-gradient: linear-gradient(135deg, #f59e0b 0%, #f97316 100%);
+  --success-gradient: linear-gradient(135deg, #10b981 0%, #059669 100%);
+  --glass-bg: rgba(255, 255, 255, 0.7);
+  --glass-border: rgba(255, 255, 255, 0.3);
+  --shadow-soft: 0 4px 20px -5px rgba(0, 0, 0, 0.1);
+  --shadow-hover: 0 20px 40px -10px rgba(0, 0, 0, 0.15);
+}
+
+.dashboard-container {
+  background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 50%, #cbd5e1 100%);
+  min-height: 100vh;
+  position: relative;
+  overflow-x: hidden;
+}
+
+.dashboard-container::before {
+  content: '';
+  position: absolute;
+  top: -50%;
+  right: -20%;
+  width: 80%;
+  height: 80%;
+  background: radial-gradient(circle, rgba(99, 102, 241, 0.1) 0%, transparent 70%);
+  border-radius: 50%;
+  animation: float 20s ease-in-out infinite;
+}
+
+@keyframes float {
+  0%, 100% { transform: translateY(0px) rotate(0deg); }
+  50% { transform: translateY(-30px) rotate(180deg); }
+}
+
+.sidebar {
+  background: var(--glass-bg);
+  backdrop-filter: blur(20px);
+  border-right: 1px solid var(--glass-border);
+  box-shadow: var(--shadow-soft);
+  position: relative;
+  z-index: 10;
+}
+
+.nav-item {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  border-radius: 16px;
+  margin: 6px 0;
+  position: relative;
+  overflow: hidden;
+}
+
+.nav-item::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: var(--primary-gradient);
+  transition: left 0.3s ease;
+  z-index: -1;
+}
+
+.nav-item:hover::before {
+  left: 0;
+}
+
+.nav-item:hover {
+  color: white;
+  transform: translateX(8px) scale(1.02);
+  box-shadow: var(--shadow-soft);
+}
+
+.nav-item.active {
+  background: var(--primary-gradient);
+  color: white;
+  box-shadow: var(--shadow-soft);
+  transform: scale(1.02);
+}
+
+.stat-card {
+  background: var(--glass-bg);
+  backdrop-filter: blur(20px);
+  border: 1px solid var(--glass-border);
+  border-radius: 24px;
+  padding: 28px;
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+  overflow: hidden;
+  box-shadow: var(--shadow-soft);
+}
+
+.stat-card::before {
+  content: '';
+  position: absolute;
+  top: -50%;
+  right: -50%;
+  width: 100%;
+  height: 100%;
+  background: radial-gradient(circle, rgba(255, 255, 255, 0.1) 0%, transparent 70%);
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.stat-card:hover::before {
+  opacity: 1;
+}
+
+.stat-card:hover {
+  transform: translateY(-8px) scale(1.02);
+  box-shadow: var(--shadow-hover);
+  border-color: rgba(99, 102, 241, 0.3);
+}
+
+.stat-icon {
+  width: 72px;
+  height: 72px;
+  border-radius: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 28px;
+  color: white;
+  margin-bottom: 20px;
+  position: relative;
+  box-shadow: 0 8px 20px -5px rgba(0, 0, 0, 0.2);
+}
+
+.stat-icon::after {
+  content: '';
+  position: absolute;
+  top: -2px;
+  left: -2px;
+  right: -2px;
+  bottom: -2px;
+  background: inherit;
+  border-radius: inherit;
+  filter: blur(8px);
+  opacity: 0.4;
+  z-index: -1;
+}
+
+.action-card {
+  background: var(--glass-bg);
+  backdrop-filter: blur(20px);
+  border: 1px solid var(--glass-border);
+  border-radius: 24px;
+  padding: 32px;
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+  overflow: hidden;
+  box-shadow: var(--shadow-soft);
+}
+
+.action-card:hover {
+  transform: translateY(-6px) scale(1.01);
+  box-shadow: var(--shadow-hover);
+}
+
+.action-card.featured {
+  border: 2px solid rgba(99, 102, 241, 0.3);
+  background: linear-gradient(135deg, rgba(99, 102, 241, 0.05) 0%, rgba(139, 92, 246, 0.05) 100%);
+}
+
+.btn-premium {
+  background: var(--primary-gradient);
+  color: white;
+  padding: 14px 28px;
+  border-radius: 16px;
+  font-weight: 600;
+  font-size: 15px;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 8px 20px -5px rgba(99, 102, 241, 0.3);
+  position: relative;
+  overflow: hidden;
+}
+
+.btn-premium::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+  transition: left 0.5s ease;
+}
+
+.btn-premium:hover::before {
+  left: 100%;
+}
+
+.btn-premium:hover {
+  transform: translateY(-3px) scale(1.05);
+  box-shadow: 0 12px 30px -5px rgba(99, 102, 241, 0.4);
+}
+
+.candidate-row {
+  background: var(--glass-bg);
+  backdrop-filter: blur(10px);
+  border: 1px solid var(--glass-border);
+  border-radius: 16px;
+  padding: 16px;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  margin: 8px 0;
+}
+
+.candidate-row:hover {
+  transform: translateX(6px) scale(1.01);
+  box-shadow: var(--shadow-soft);
+  border-color: rgba(99, 102, 241, 0.3);
+}
+
+.avatar-gradient {
+  background: var(--primary-gradient);
+  box-shadow: 0 4px 15px -3px rgba(99, 102, 241, 0.3);
+}
+
+.status-pill {
+  padding: 6px 16px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  transition: all 0.2s ease;
+}
+
+.status-pill:hover {
+  transform: scale(1.05);
+}
+
+.status-pending { 
+  background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%); 
+  color: #92400e;
+  box-shadow: 0 2px 8px -2px rgba(245, 158, 11, 0.3);
+}
+
+.status-offer_sent { 
+  background: linear-gradient(135deg, #d1fae5 0%, #a7f3d0 100%); 
+  color: #065f46;
+  box-shadow: 0 2px 8px -2px rgba(16, 185, 129, 0.3);
+}
+
+.modal-overlay {
+  background: rgba(0, 0, 0, 0.4);
+  backdrop-filter: blur(8px);
+}
+
+.modal-content {
+  background: var(--glass-bg);
+  backdrop-filter: blur(30px);
+  border: 1px solid var(--glass-border);
+  border-radius: 28px;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+}
+
+@media (max-width: 768px) {
+  .sidebar {
+    transform: translateX(-100%);
+    transition: transform 0.3s ease;
+  }
+  
+  .sidebar.open {
+    transform: translateX(0);
+  }
+  
+  .stat-card {
+    padding: 20px;
+  }
+  
+  .action-card {
+    padding: 24px;
+  }
+}
+
+.fade-in {
+  animation: fadeIn 0.6s ease-out;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.stagger-1 { animation-delay: 0.1s; }
+.stagger-2 { animation-delay: 0.2s; }
+.stagger-3 { animation-delay: 0.3s; }
+.stagger-4 { animation-delay: 0.4s; }
+
+/* Dark Mode Styles */
+/* Dark Mode Styling for Dashboard Header */
+.dark .dashboard-container {
+  background: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #334155 100%);
+}
+
+.dark .dashboard-container p {
+  color: #94a3b8;
+}
+
+.dark .dashboard-container .inline-flex {
+  background: linear-gradient(to right, rgba(99, 102, 241, 0.1), rgba(139, 92, 246, 0.1)) !important;
+  border-color: rgba(139, 92, 246, 0.2) !important;
+}
+
+.dark .dashboard-container .text-gray-700 {
+  color: #e2e8f0;
+}
+
+.dark .dashboard-container .text-indigo-700 {
+  color: #818cf8;
+}
+
+.dark .sidebar {
+  background: rgba(15, 23, 42, 0.9);
+  border-right-color: rgba(51, 65, 85, 0.5);
+}
+
+.dark .nav-item {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  border-radius: 16px;
+  margin: 4px 0;
+  position: relative;
+  overflow: hidden;
+}
+
+.nav-item::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  transition: left 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  z-index: -1;
+}
+
+.nav-item:hover::before {
+  left: 0;
+}
+
+.nav-item:hover {
+  color: white;
+  transform: translateX(8px) scale(1.02);
+  box-shadow: 0 8px 25px -5px rgba(102, 126, 234, 0.25);
+}
+
+.nav-item.active {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  transform: scale(1.02);
+  box-shadow: 0 8px 25px -5px rgba(102, 126, 234, 0.25);
+}
+
+.nav-item.active::before {
+  left: 0;
+}
+
+.dark .stat-card {
+  background: rgba(30, 41, 59, 0.9);
+  border-color: rgba(51, 65, 85, 0.5);
+}
+
+.dark .stat-card h3,
+.dark .stat-card p {
+  color: #f1f5f9;
+}
+
+.dark .action-card {
+  background: rgba(30, 41, 59, 0.9);
+  border-color: rgba(51, 65, 85, 0.5);
+}
+
+.dark .action-card h3,
+.dark .action-card p {
+  color: #f1f5f9;
+}
+
+.dark .candidate-row {
+  background: rgba(30, 41, 59, 0.9);
+  border-color: rgba(51, 65, 85, 0.5);
+}
+
+.dark .candidate-row p {
+  color: #f1f5f9;
+}
+
+.dark .modal-content {
+  background: rgba(15, 23, 42, 0.95);
+  border-color: rgba(51, 65, 85, 0.5);
+}
+
+.dark .modal-content h3 {
+  color: #f1f5f9;
+}
+
+.dark .text-gray-800 {
+  color: #f1f5f9 !important;
+}
+
+.dark .text-gray-600 {
+  color: #cbd5e1 !important;
+}
+
+.dark .text-gray-700 {
+  color: #e2e8f0 !important;
+}
+
+.dark .bg-gray-50 {
+  background-color: #1e293b !important;
+}
+
+/* Custom Theme Switch Styles - Extra Small Version */
+.theme-switch {
+  --toggle-size: 16px;
+  --container-width: 3.5em;
+  --container-height: 1.5em;
+  --container-radius: 5em;
+  --container-light-bg: #3D7EAE;
+  --container-night-bg: #1D1F2C;
+  --circle-container-diameter: 2.2em;
+  --sun-moon-diameter: 1.4em;
+  --sun-bg: #ECCA2F;
+  --moon-bg: #C4C9D1;
+  --spot-color: #959DB1;
+  --circle-container-offset: calc((var(--circle-container-diameter) - var(--container-height)) / 2 * -1);
+  --stars-color: #fff;
+  --clouds-color: #F3FDFF;
+  --back-clouds-color: #AACADF;
+  --transition: .5s cubic-bezier(0, -0.02, 0.4, 1.25);
+  --circle-transition: .3s cubic-bezier(0, -0.02, 0.35, 1.17);
+}
+
+.theme-switch, .theme-switch *, .theme-switch *::before, .theme-switch *::after {
+  -webkit-box-sizing: border-box;
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  font-size: var(--toggle-size);
+}
+
+.theme-switch__container {
+  width: var(--container-width);
+  height: var(--container-height);
+  background-color: var(--container-light-bg);
+  border-radius: var(--container-radius);
+  overflow: hidden;
+  cursor: pointer;
+  -webkit-box-shadow: 0em -0.062em 0.062em rgba(0, 0, 0, 0.25), 0em 0.062em 0.125em rgba(255, 255, 255, 0.94);
+  box-shadow: 0em -0.062em 0.062em rgba(0, 0, 0, 0.25), 0em 0.062em 0.125em rgba(255, 255, 255, 0.94);
+  -webkit-transition: var(--transition);
+  -o-transition: var(--transition);
+  transition: var(--transition);
+  position: relative;
+}
+
+.theme-switch__container::before {
+  content: "";
+  position: absolute;
+  z-index: 1;
+  inset: 0;
+  -webkit-box-shadow: 0em 0.05em 0.187em rgba(0, 0, 0, 0.25) inset, 0em 0.05em 0.187em rgba(0, 0, 0, 0.25) inset;
+  box-shadow: 0em 0.05em 0.187em rgba(0, 0, 0, 0.25) inset, 0em 0.05em 0.187em rgba(0, 0, 0, 0.25) inset;
+  border-radius: var(--container-radius)
+}
+
+.theme-switch__checkbox {
+  display: none;
+}
+
+.theme-switch__circle-container {
+  width: var(--circle-container-diameter);
+  height: var(--circle-container-diameter);
+  background-color: rgba(255, 255, 255, 0.1);
+  position: absolute;
+  left: var(--circle-container-offset);
+  top: var(--circle-container-offset);
+  border-radius: var(--container-radius);
+  -webkit-box-shadow: inset 0 0 0 3.375em rgba(255, 255, 255, 0.1), inset 0 0 0 3.375em rgba(255, 255, 255, 0.1), 0 0 0 0.625em rgba(255, 255, 255, 0.1), 0 0 0 1.25em rgba(255, 255, 255, 0.1);
+  box-shadow: inset 0 0 0 3.375em rgba(255, 255, 255, 0.1), inset 0 0 0 3.375em rgba(255, 255, 255, 0.1), 0 0 0 0.625em rgba(255, 255, 255, 0.1), 0 0 0 1.25em rgba(255, 255, 255, 0.1);
+  display: -webkit-box;
+  display: -ms-flexbox;
+  display: flex;
+  -webkit-transition: var(--circle-transition);
+  -o-transition: var(--circle-transition);
+  transition: var(--circle-transition);
+  pointer-events: none;
+}
+
+.theme-switch__sun-moon-container {
+  pointer-events: auto;
+  position: relative;
+  z-index: 2;
+  width: var(--sun-moon-diameter);
+  height: var(--sun-moon-diameter);
+  margin: auto;
+  border-radius: var(--container-radius);
+  background-color: var(--sun-bg);
+  -webkit-box-shadow: 0.062em 0.062em 0.062em 0em rgba(254, 255, 239, 0.61) inset, 0em -0.062em 0.062em 0em #a1872a inset;
+  box-shadow: 0.062em 0.062em 0.062em 0em rgba(254, 255, 239, 0.61) inset, 0em -0.062em 0.062em 0em #a1872a inset;
+  -webkit-filter: drop-shadow(0.062em 0.125em 0.125em rgba(0, 0, 0, 0.25)) drop-shadow(0em 0.062em 0.125em rgba(0, 0, 0, 0.25));
+  filter: drop-shadow(0.062em 0.125em 0.125em rgba(0, 0, 0, 0.25)) drop-shadow(0em 0.062em 0.125em rgba(0, 0, 0, 0.25));
+  overflow: hidden;
+  -webkit-transition: var(--transition);
+  -o-transition: var(--transition);
+  transition: var(--transition);
+}
+
+.theme-switch__moon {
+  -webkit-transform: translateX(100%);
+  -ms-transform: translateX(100%);
+  transform: translateX(100%);
+  width: 100%;
+  height: 100%;
+  background-color: var(--moon-bg);
+  border-radius: inherit;
+  -webkit-box-shadow: 0.062em 0.062em 0.062em 0em rgba(254, 255, 239, 0.61) inset, 0em -0.062em 0.062em 0em #969696 inset;
+  box-shadow: 0.062em 0.062em 0.062em 0em rgba(254, 255, 239, 0.61) inset, 0em -0.062em 0.062em 0em #969696 inset;
+  -webkit-transition: var(--transition);
+  -o-transition: var(--transition);
+  transition: var(--transition);
+  position: relative;
+}
+
+.theme-switch__spot {
+  position: absolute;
+  top: 0.75em;
+  left: 0.312em;
+  width: 0.75em;
+  height: 0.75em;
+  border-radius: var(--container-radius);
+  background-color: var(--spot-color);
+  -webkit-box-shadow: 0em 0.0312em 0.062em rgba(0, 0, 0, 0.25) inset;
+  box-shadow: 0em 0.0312em 0.062em rgba(0, 0, 0, 0.25) inset;
+}
+
+.theme-switch__spot:nth-of-type(2) {
+  width: 0.375em;
+  height: 0.375em;
+  top: 0.937em;
+  left: 1.375em;
+}
+
+.theme-switch__spot:nth-last-of-type(3) {
+  width: 0.25em;
+  height: 0.25em;
+  top: 0.312em;
+  left: 0.812em;
+}
+
+.theme-switch__clouds {
+  width: 1.25em;
+  height: 1.25em;
+  background-color: var(--clouds-color);
+  border-radius: var(--container-radius);
+  position: absolute;
+  bottom: -0.625em;
+  left: 0.312em;
+  -webkit-box-shadow: 0.937em 0.312em var(--clouds-color), -0.312em -0.312em var(--back-clouds-color), 1.437em 0.375em var(--clouds-color), 0.5em -0.125em var(--back-clouds-color), 2.187em 0 var(--clouds-color), 1.25em -0.062em var(--back-clouds-color), 2.937em 0.312em var(--clouds-color), 2em -0.312em var(--back-clouds-color), 3.625em -0.062em var(--clouds-color), 2.625em 0em var(--back-clouds-color), 4.5em -0.312em var(--clouds-color), 3.375em -0.437em var(--back-clouds-color), 4.625em -1.75em 0 0.437em var(--clouds-color), 4em -0.625em var(--back-clouds-color), 4.125em -2.125em 0 0.437em var(--clouds-color);
+  box-shadow: 0.937em 0.312em var(--clouds-color), -0.312em -0.312em var(--back-clouds-color), 1.437em 0.375em var(--clouds-color), 0.5em -0.125em var(--back-clouds-color), 2.187em 0 var(--clouds-color), 1.25em -0.062em var(--back-clouds-color), 2.937em 0.312em var(--clouds-color), 2em -0.312em var(--back-clouds-color), 3.625em -0.062em var(--clouds-color), 2.625em 0em var(--back-clouds-color), 4.5em -0.312em var(--clouds-color), 3.375em -0.437em var(--back-clouds-color), 4.625em -1.75em 0 0.437em var(--clouds-color), 4em -0.625em var(--back-clouds-color), 4.125em -2.125em 0 0.437em var(--clouds-color);
+  -webkit-transition: 0.5s cubic-bezier(0, -0.02, 0.4, 1.25);
+  -o-transition: 0.5s cubic-bezier(0, -0.02, 0.4, 1.25);
+  transition: 0.5s cubic-bezier(0, -0.02, 0.4, 1.25);
+}
+
+.theme-switch__stars-container {
+  position: absolute;
+  color: var(--stars-color);
+  top: -100%;
+  left: 0.312em;
+  width: 2.75em;
+  height: auto;
+  -webkit-transition: var(--transition);
+  -o-transition: var(--transition);
+  transition: var(--transition);
+}
+
+/* Theme Switch Actions */
+.theme-switch__checkbox:checked + .theme-switch__container {
+  background-color: var(--container-night-bg);
+}
+
+.theme-switch__checkbox:checked + .theme-switch__container .theme-switch__circle-container {
+  left: calc(100% - var(--circle-container-offset) - var(--circle-container-diameter));
+}
+
+.theme-switch__checkbox:checked + .theme-switch__container .theme-switch__circle-container:hover {
+  left: calc(100% - var(--circle-container-offset) - var(--circle-container-diameter) - 0.187em)
+}
+
+.theme-switch__circle-container:hover {
+  left: calc(var(--circle-container-offset) + 0.187em);
+}
+
+.theme-switch__checkbox:checked + .theme-switch__container .theme-switch__moon {
+  -webkit-transform: translate(0);
+  -ms-transform: translate(0);
+  transform: translate(0);
+}
+
+.theme-switch__checkbox:checked + .theme-switch__container .theme-switch__clouds {
+  bottom: -4.062em;
+}
+
+.theme-switch__checkbox:checked + .theme-switch__container .theme-switch__stars-container {
+  top: 50%;
+  -webkit-transform: translateY(-50%);
+  -ms-transform: translateY(-50%);
+  transform: translateY(-50%);
+}
+.premium-clock {
+    width: 220px;
+}
+</style>
+{% endblock %}
+{% block content %}
+<div class="dashboard-container flex relative">
+  <!-- Mobile Menu Toggle -->
+  <button class="lg:hidden fixed top-4 left-4 z-50 p-3 bg-white/80 backdrop-blur-lg rounded-xl shadow-lg" onclick="toggleSidebar()">
+    <i class="fas fa-bars text-gray-700"></i>
+  </button>
+
+  <!-- Sidebar -->
+  <div id="sidebar" class="sidebar w-72 min-h-screen p-6 fixed left-0 top-0 transition-transform duration-300 z-40 lg:translate-x-0 -translate-x-full">
+    <div class="mb-10 fade-in">
+      <div class="flex items-center space-x-4">
+        <img src="{% static 'logo/image.png' %}" alt="T-Home Logo" class="w-14 h-14 rounded-full shadow-lg border-2 border-white/50">
+        <div>
+          <h2 class="text-xl font-bold text-gray-800 dark:text-white">T-Home</h2>
+          <p class="text-xs text-gray-600 dark:text-gray-300">Your Trusted Partner</p>
+          <p class="text-xs text-indigo-600 font-medium mt-1 dark:text-indigo-400">Welcome, {{ user.first_name|default:user.username }}</p>
+        </div>
+      </div>
+    </div>
+    
+    <nav class="space-y-2">
+      <a href="{% url 'offers:dashboard' %}" class="nav-item active flex items-center space-x-4 p-4 text-gray-700 relative">
+        <i class="fas fa-tachometer-alt w-5 text-lg"></i>
+        <span class="font-medium">Dashboard</span>
+      </a>
+      <a href="{% url 'offers:create_offer' %}" class="nav-item flex items-center space-x-4 p-4 text-gray-700 relative">
+        <i class="fas fa-plus-circle w-5 text-lg"></i>
+        <span class="font-medium">Create Offer</span>
+      </a>
+      <a href="{% url 'offers:bulk_upload' %}" class="nav-item flex items-center space-x-4 p-4 text-gray-700 relative">
+        <i class="fas fa-upload w-5 text-lg"></i>
+        <span class="font-medium">Bulk Upload</span>
+      </a>
+      
+      <!-- Fallback buttons for Create Offer and Bulk Upload -->
+      <div class="lg:hidden mt-4 space-y-2">
+        <a href="{% url 'offers:create_offer' %}" class="block w-full text-center bg-blue-600 text-white py-3 px-4 rounded-lg hover:bg-blue-700">
+          <i class="fas fa-plus mr-2"></i> Create Offer
+        </a>
+        <a href="{% url 'offers:bulk_upload' %}" class="block w-full text-center bg-green-600 text-white py-3 px-4 rounded-lg hover:bg-green-700">
+          <i class="fas fa-upload mr-2"></i> Bulk Upload
+        </a>
+      </div>
+      <a href="{% url 'offers:templates' %}" class="nav-item flex items-center space-x-4 p-4 text-gray-700 relative">
+        <i class="fas fa-file-alt w-5 text-lg"></i>
+        <span class="font-medium">Templates</span>
+      </a>
+      <a href="{% url 'offers:candidate_list' %}" class="nav-item flex items-center space-x-4 p-4 text-gray-700 relative">
+        <i class="fas fa-users w-5 text-lg"></i>
+        <span class="font-medium">Candidates</span>
+      </a>
+    </nav>
+    
+    <div class="mt-auto pt-8">
+      <!-- Theme Toggle in Sidebar -->
+      <div class="mb-4">
+        <label class="theme-switch">
+          <input type="checkbox" class="theme-switch__checkbox" id="themeToggle">
+          <div class="theme-switch__container">
+            <div class="theme-switch__clouds"></div>
+            <div class="theme-switch__stars-container" style="background: url('data:image/svg+xml,%3Csvg width="60" height="60" viewBox="0 0 60 60" xmlns="http://www.w3.org/2000/svg"%3E%3Cdefs%3E%3Cpattern id="grid" width="60" height="60" patternUnits="userSpaceOnUse"%3E%3Cpath d="M 60 0 L 0 0 0 60 L 60 60 Z" fill="none" stroke="rgba(99, 102, 241, 0.1)" stroke-width="1"/%3E%3C/pattern%3E%3C/defs%3E%3Crect width="60" height="60" fill="url(%23grid)"/%3E%3C/svg%3E');">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 144 55" fill="none">
+                <path fill-rule="evenodd" clip-rule="evenodd" d="M135.831 3.00688C135.055 3.85027 134.111 4.29946 133 4.35447C134.111 4.40947 135.055 4.85867 135.831 5.71123C136.607 6.55462 136.996 7.56303 136.996 8.72727C136.996 7.95722 137.172 7.25134 137.525 6.59129C137.886 5.93124 138.372 5.39954 138.980 5.00535C139.598 4.60199 140.268 4.39114 141 4.35447C139.880 4.29030 138.936 3.85027 138.160 3.00688C137.384 2.16348 136.996 1.16425 136.996 0C136.996 1.16425 136.607 2.16348 135.831 3.00688ZM31 23.3545C32.1114 23.2995 33.0551 22.8503 33.8313 22.0069C34.6075 21.1635 34.9956 20.1642 34.9956 19C34.9956 20.1642 35.3837 21.1635 36.1599 22.0069C36.9361 22.8503 37.8798 23.2903 39 23.3545C38.2679 23.3911 37.5976 23.6020 36.9802 24.0053C36.3716 24.3995 35.8864 24.9312 35.5248 25.5913C35.1720 26.2513 34.9956 26.9956 34.9956 27.7273C34.9956 26.563 34.6075 25.5638 33.8313 24.7204C33.0551 23.877 32.1114 23.428 31 23.3545Z" fill="currentColor"></path>
+              </svg>
+            </div>
+            <div class="theme-switch__circle-container">
+              <div class="theme-switch__sun-moon-container">
+                <div class="theme-switch__moon">
+                  <div class="theme-switch__spot"></div>
+                  <div class="theme-switch__spot"></div>
+                  <div class="theme-switch__spot"></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </label>
+      </div>
+      
+      <a href="{% url 'accounts:login' %}" class="flex items-center space-x-4 p-4 text-red-600 hover:bg-red-50 rounded-xl transition-all duration-300 backdrop-blur-sm">
+        <i class="fas fa-sign-out-alt w-5 text-lg"></i>
+        <span class="font-medium">Logout</span>
+      </a>
+    </div>
+  </div>
+  
+  <!-- Main Content -->
+  <div class="flex-1 p-4 lg:p-8 lg:ml-72">
+    <!-- Header -->
+    <div class="mb-10 fade-in">
+      <div class="flex justify-between items-start">
+        <div class="flex-1">
+          <h1 class="text-4xl lg:text-5xl font-bold text-gray-800 mb-3 bg-gradient-to-r from-gray-800 to-gray-600 bg-clip-text text-transparent">
+            Dashboard
+          </h1>
+          <p class="text-lg text-gray-600">Manage your offer letters and candidates with precision and ease</p>
+          <div class="mt-4 inline-flex items-center px-4 py-2 bg-gradient-to-r from-indigo-50 to-purple-50 rounded-xl border border-indigo-200">
+            <i class="fas fa-calendar-alt mr-2 text-indigo-600"></i>
+            <span class="text-sm font-medium text-gray-700">Today's Letter Date: <span class="text-indigo-700 font-bold">{{ today_date }}</span></span>
+          </div>
+          
+          <!-- Admin PDF Cleanup Button - Only for pratheek@thome -->
+          {% if user.username == 'pratheek@thome' %}
+          <div class="mt-4">
+            <button onclick="cleanupPDFs()" class="inline-flex items-center px-4 py-2 bg-gradient-to-r from-red-500 to-pink-500 text-white rounded-xl border border-red-300 hover:from-red-600 hover:to-pink-600 transition-all duration-200 shadow-lg hover:shadow-xl">
+              <i class="fas fa-trash-alt mr-2"></i>
+              <span class="text-sm font-medium">Clean Up PDFs</span>
+            </button>
+            <p class="text-xs text-gray-500 mt-1">Remove all PDF files from server</p>
+          </div>
+          {% endif %}
+        </div>
+        <div class="flex-shrink-0">
+          <!-- Premium Clock Design - More Compact -->
+          <div class="bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 rounded-2xl p-3 shadow-xl border border-white/20 backdrop-blur-xl relative overflow-hidden premium-clock">
+            <!-- Animated Background Pattern -->
+            <div class="absolute inset-0 opacity-20">
+              <div class="absolute top-0 left-0 w-full h-full bg-gradient-to-r from-blue-500/20 to-purple-500/20 animate-pulse"></div>
+              <div class="absolute inset-2 border border-white/10 rounded-xl"></div>
+            </div>
+            
+            <!-- Clock Content -->
+            <div class="relative z-10">
+              <div class="text-center mb-1">
+                <div class="inline-flex items-center space-x-1 px-1 py-0.5 bg-white/10 rounded-full backdrop-blur-sm border border-white/20">
+                  <div class="w-1 h-1 bg-green-400 rounded-full animate-pulse"></div>
+                  <span class="text-xs text-green-400 font-medium">LIVE</span>
+                </div>
+              </div>
+              
+              <div id="currentTime" class="text-lg font-bold text-white mb-1 tracking-wider font-mono tabular-nums text-center">
+                00:00:00 AM
+              </div>
+              
+              <div id="currentDate" class="text-xs text-gray-300 font-medium text-center">
+                Loading...
+              </div>
+              
+              <!-- Time Zone Indicator -->
+              <div class="mt-1 flex items-center justify-center space-x-1 text-xs text-gray-400">
+                <i class="fas fa-globe-asia text-xs"></i>
+                <span>IST (UTC+5:30)</span>
+              </div>
+            </div>
+            
+            <!-- Decorative Elements -->
+            <div class="absolute -top-0.5 -right-0.5 w-4 h-4 bg-gradient-to-br from-yellow-400 to-orange-500 rounded-full shadow-lg animate-pulse"></div>
+            <div class="absolute -bottom-0.5 -left-0.5 w-3 h-3 bg-gradient-to-br from-blue-400 to-purple-500 rounded-full shadow-lg animate-pulse" ></div>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Statistics Cards -->
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-10">
+      <div class="stat-card fade-in stagger-1">
+        <div class="stat-icon bg-gradient-to-br from-blue-500 to-blue-600">
+          <i class="fas fa-users"></i>
+        </div>
+        <h3 class="text-3xl font-bold text-gray-800 mb-2">{{ total_candidates }}</h3>
+        <p class="text-gray-600 font-medium">Total Candidates</p>
+        <div class="mt-4 text-sm text-blue-600 font-medium">
+          <i class="fas fa-arrow-up mr-1"></i>
+          <span>12% from last month</span>
+        </div>
+      </div>
+      
+      <div class="stat-card fade-in stagger-2">
+        <div class="stat-icon bg-gradient-to-br from-amber-500 to-amber-600">
+          <i class="fas fa-clock"></i>
+        </div>
+        <h3 class="text-3xl font-bold text-gray-800 mb-2">{{ pending_candidates }}</h3>
+        <p class="text-gray-600 font-medium">Pending Offers</p>
+        <div class="mt-4 text-sm text-amber-600 font-medium">
+          <i class="fas fa-exclamation-triangle mr-1"></i>
+          <span>Requires action</span>
+        </div>
+      </div>
+      
+      <div class="stat-card fade-in stagger-3">
+        <div class="stat-icon bg-gradient-to-br from-indigo-500 to-indigo-600">
+          <i class="fas fa-file-alt"></i>
+        </div>
+        <h3 class="text-3xl font-bold text-gray-800 mb-2">{{ offer_generated }}</h3>
+        <p class="text-gray-600 font-medium">Offers Generated</p>
+        <div class="mt-4 text-sm text-indigo-600 font-medium">
+          <i class="fas fa-arrow-up mr-1"></i>
+          <span>8% from last month</span>
+        </div>
+      </div>
+      
+      <div class="stat-card fade-in stagger-4">
+        <div class="stat-icon bg-gradient-to-br from-green-500 to-green-600">
+          <i class="fas fa-check-circle"></i>
+        </div>
+        <h3 class="text-3xl font-bold text-gray-800 mb-2">{{ offer_sent }}</h3>
+        <p class="text-gray-600 font-medium">Offers Sent</p>
+        <div class="mt-4 text-sm text-green-600 font-medium">
+          <i class="fas fa-arrow-up mr-1"></i>
+          <span>15% from last month</span>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Quick Actions -->
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-10">
+      <div class="action-card fade-in stagger-1">
+        <div class="flex items-center mb-6">
+          <div class="w-12 h-12 bg-gradient-to-br from-purple-500 to-pink-600 rounded-xl flex items-center justify-center mr-4">
+            <i class="fas fa-plus text-white text-xl"></i>
+          </div>
+          <h3 class="text-xl font-bold text-gray-800">Create Offer</h3>
+        </div>
+        <p class="text-gray-600 mb-6 leading-relaxed">Generate personalized offer letters for individual candidates with role-specific templates.</p>
+        <button onclick="openModal()" class="btn-premium inline-flex items-center justify-center w-full">
+          <i class="fas fa-plus mr-2"></i>
+          Create New Offer
+        </button>
+      </div>
+      
+      <div class="action-card fade-in stagger-2">
+        <div class="flex items-center mb-6">
+          <div class="w-12 h-12 bg-gradient-to-br from-orange-500 to-red-600 rounded-xl flex items-center justify-center mr-4">
+            <i class="fas fa-cloud-upload-alt text-white text-xl"></i>
+          </div>
+          <h3 class="text-xl font-bold text-gray-800">Bulk Upload</h3>
+        </div>
+        <p class="text-gray-600 mb-6 leading-relaxed">Upload CSV or Excel file with multiple candidate details for batch processing.</p>
+        <a href="{% url 'offers:bulk_upload' %}" class="btn-premium inline-flex items-center justify-center w-full">
+          <i class="fas fa-cloud-upload-alt mr-2"></i>
+          Upload File
+        </a>
+      </div>
+    </div>
+    
+    <!-- Recent Candidates - Moved to Bottom -->
+    <div class="action-card fade-in stagger-3">
+      <div class="flex items-center mb-6">
+        <div class="w-12 h-12 bg-gradient-to-br from-emerald-500 to-teal-600 rounded-xl flex items-center justify-center mr-4">
+            <i class="fas fa-history text-white text-xl"></i>
+          </div>
+          <h3 class="text-xl font-bold text-gray-800">Recent Candidates</h3>
+        </div>
+      <div class="space-y-3 max-h-64 overflow-y-auto">
+        {% for candidate in recent_candidates %}
+        <div class="candidate-row">
+          <div class="flex items-center justify-between">
+            <div class="flex items-center space-x-3">
+                <div class="w-10 h-10 avatar-gradient rounded-full flex items-center justify-center">
+                  <span class="text-white font-bold text-sm">{{ candidate.name.0|upper }}</span>
+                </div>
+                <div>
+                  <p class="font-semibold text-gray-800 text-sm">{{ candidate.name }}</p>
+                  <p class="text-xs text-gray-600">{{ candidate.role }}</p>
+                </div>
+              </div>
+              <div class="flex items-center space-x-2">
+                <span class="status-pill status-{{ candidate.status }}">{{ candidate.status|default:"pending" }}</span>
+                <button onclick="showCandidateDetails('{{ candidate.id }}')" class="p-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors">
+                  <i class="fas fa-eye text-xs"></i>
+                </button>
+              </div>
+            </div>
+          </div>
+          {% empty %}
+          <div class="text-center py-8 text-gray-500">
+            <i class="fas fa-user-slash text-4xl mb-4"></i>
+            <p class="text-lg font-medium">No candidates found</p>
+            <p class="text-sm">Get started by creating your first offer letter</p>
+          </div>
+          {% endfor %}
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Candidate Details Modal -->
+<div id="candidateModal" class="modal-overlay fixed inset-0 flex items-center justify-center z-50 hidden">
+  <div class="modal-content p-8 m-4 max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+    <div class="flex justify-between items-center mb-8">
+      <h3 class="text-2xl font-bold text-gray-800">Candidate Details</h3>
+      <button onclick="closeCandidateModal()" class="text-gray-500 hover:text-gray-700 transition-colors">
+        <i class="fas fa-times text-xl"></i>
+      </button>
+    </div>
+    
+    <div id="candidateDetails" class="space-y-6">
+      <!-- Content will be loaded here -->
+    </div>
+    
+    <div class="flex justify-end space-x-4 mt-8">
+      <button onclick="closeCandidateModal()" class="px-6 py-3 bg-gray-500 text-white rounded-xl hover:bg-gray-600 transition-colors">
+        Close
+      </button>
+      <button id="generateBtn" onclick="generateAndSendOffer()" class="btn-premium">
+        <i class="fas fa-paper-plane mr-2"></i>
+        Generate & Send
+      </button>
+    </div>
+  </div>
+</div>
+
+<script>
+  let currentCandidateId = null;
+  
+  function toggleSidebar() {
+    const sidebar = document.getElementById('sidebar');
+    sidebar.classList.toggle('translate-x-0');
+    sidebar.classList.toggle('-translate-x-full');
+  }
+  
+  function showCandidateDetails(candidateId) {
+    currentCandidateId = candidateId;
+    
+    fetch(`/dashboard/candidate/${candidateId}/`, {
+      headers: {
+        'X-Requested-With': 'XMLHttpRequest'
+      }
+    })
+    .then(response => response.json())
+    .then(data => {
+      const detailsHtml = `
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div class="space-y-4">
+            <div class="p-4 bg-gray-50 rounded-xl">
+              <label class="text-sm font-medium text-gray-600 block mb-1">Work ID</label>
+              <p class="font-semibold text-gray-800 text-lg">${data.work_id}</p>
+            </div>
+            <div class="p-4 bg-gray-50 rounded-xl">
+              <label class="text-sm font-medium text-gray-600 block mb-1">Status</label>
+              <p><span class="status-pill status-${data.status}">${data.status.replace('_', ' ')}</span></p>
+            </div>
+            <div class="p-4 bg-gray-50 rounded-xl">
+              <label class="text-sm font-medium text-gray-600 block mb-1">Full Name</label>
+              <p class="font-semibold text-gray-800 text-lg">${data.name}</p>
+            </div>
+          </div>
+          
+          <div class="space-y-4">
+            <div class="p-4 bg-gray-50 rounded-xl">
+              <label class="text-sm font-medium text-gray-600 block mb-1">Email</label>
+              <p class="font-semibold text-gray-800">${data.email}</p>
+            </div>
+            <div class="p-4 bg-gray-50 rounded-xl">
+              <label class="text-sm font-medium text-gray-600 block mb-1">Phone</label>
+              <p class="font-semibold text-gray-800">${data.phone}</p>
+            </div>
+            <div class="p-4 bg-gray-50 rounded-xl">
+              <label class="text-sm font-medium text-gray-600 block mb-1">Role</label>
+              <p class="font-semibold text-gray-800">${data.role}</p>
+            </div>
+          </div>
+        </div>
+        
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div class="p-4 bg-gray-50 rounded-xl">
+            <label class="text-sm font-medium text-gray-600 block mb-1">Letter Date</label>
+            <p class="font-semibold text-gray-800">${data.letter_date}</p>
+          </div>
+          <div class="p-4 bg-gray-50 rounded-xl">
+            <label class="text-sm font-medium text-gray-600 block mb-1">Joining Date</label>
+            <p class="font-semibold text-gray-800">${data.joining_date}</p>
+          </div>
+        </div>
+        
+        <div class="p-4 bg-gray-50 rounded-xl">
+          <label class="text-sm font-medium text-gray-600 block mb-1">Created At</label>
+          <p class="font-semibold text-gray-800">${data.created_at}</p>
+        </div>
+      `;
+      
+      document.getElementById('candidateDetails').innerHTML = detailsHtml;
+      
+      const generateBtn = document.getElementById('generateBtn');
+      if (data.status === 'offer_sent' || data.status === 'accepted') {
+        generateBtn.disabled = true;
+        generateBtn.classList.add('opacity-50', 'cursor-not-allowed');
+        generateBtn.innerHTML = '<i class="fas fa-check mr-2"></i>Already Sent';
+      } else {
+        generateBtn.disabled = false;
+        generateBtn.classList.remove('opacity-50', 'cursor-not-allowed');
+        generateBtn.innerHTML = '<i class="fas fa-paper-plane mr-2"></i>Generate & Send';
+      }
+      
+      document.getElementById('candidateModal').classList.remove('hidden');
+    })
+    .catch(error => {
+      console.error('Error:', error);
+      alert('Error loading candidate details');
+    });
+  }
+  
+  function closeCandidateModal() {
+    document.getElementById('candidateModal').classList.add('hidden');
+    currentCandidateId = null;
+  }
+  
+  function generateAndSendOffer() {
+    if (!currentCandidateId) return;
+    
+    const generateBtn = document.getElementById('generateBtn');
+    generateBtn.disabled = true;
+    generateBtn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Processing...';
+    
+    fetch('/dashboard/generate-and-send/', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-CSRFToken': getCookie('csrftoken'),
+      },
+      body: JSON.stringify({
+        candidate_id: currentCandidateId
+      })
+    })
+    .then(response => response.json())
+    .then(data => {
+      if (data.success) {
+        alert(data.message);
+        closeCandidateModal();
+        setTimeout(() => window.location.reload(), 1000);
+      } else {
+        alert('Error: ' + data.error);
+      }
+    })
+    .catch(error => {
+      console.error('Error:', error);
+      alert('Error generating and sending offer');
+    })
+    .finally(() => {
+      generateBtn.disabled = false;
+      generateBtn.innerHTML = '<i class="fas fa-paper-plane mr-2"></i>Generate & Send';
+    });
+  }
+  
+  function getCookie(name) {
+    let cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+      const cookies = document.cookie.split(';');
+      for (let i = 0; i < cookies.length; i++) {
+        const cookie = cookies[i].trim();
+        if (cookie.substring(0, name.length + 1) === (name + '=')) {
+          cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+          break;
+        }
+      }
+    }
+    return cookieValue;
+  }
+  
+  document.getElementById('candidateModal').addEventListener('click', function(e) {
+    if (e.target === this) {
+      closeCandidateModal();
+    }
+  });
+
+  // Real-time date and time display
+  function updateDateTime() {
+    const now = new Date();
+    
+    // Convert to Asia/Kolkata timezone (UTC+05:30)
+    const options = { 
+      timeZone: 'Asia/Kolkata',
+      hour: '2-digit', 
+      minute: '2-digit', 
+      second: '2-digit',
+      hour12: true 
+    };
+    const timeString = now.toLocaleTimeString('en-US', options);
+    
+    // Format date in Asia/Kolkata timezone
+    const dateOptions = { 
+      timeZone: 'Asia/Kolkata',
+      weekday: 'long', 
+      year: 'numeric', 
+      month: 'long', 
+      day: 'numeric' 
+    };
+    const dateString = now.toLocaleDateString('en-US', dateOptions);
+    
+    // Update DOM
+    const timeElement = document.getElementById('currentTime');
+    const dateElement = document.getElementById('currentDate');
+    
+    if (timeElement) timeElement.textContent = timeString;
+    if (dateElement) dateElement.textContent = dateString;
+  }
+  
+  // Update immediately and then every second
+  updateDateTime();
+  setInterval(updateDateTime, 1000);
+  
+  // Theme Toggle Functionality
+  const themeToggle = document.getElementById('themeToggle');
+  const html = document.documentElement;
+  
+  // Check for saved theme preference or default to light
+  const currentTheme = localStorage.getItem('theme') || 'light';
+  if (currentTheme === 'dark') {
+    html.classList.add('dark');
+    themeToggle.checked = true;
+  }
+  
+  themeToggle.addEventListener('change', () => {
+    html.classList.toggle('dark');
+    
+    if (html.classList.contains('dark')) {
+      // Switch to dark mode
+      localStorage.setItem('theme', 'dark');
+    } else {
+      // Switch to light mode
+      localStorage.setItem('theme', 'light');
+    }
+  });
+  
+  // Get today's date for letter date (format: DD Month YYYY) - Asia/Kolkata timezone
+  function getTodayDate() {
+    const today = new Date();
+    const options = { 
+      timeZone: 'Asia/Kolkata',
+      day: 'numeric', 
+      month: 'long', 
+      year: 'numeric' 
+    };
+    return today.toLocaleDateString('en-US', options);
+  }
+  
+  // Admin PDF Cleanup Function
+  function cleanupPDFs() {
+    if (confirm('Are you sure you want to remove all PDF files from the server? This action cannot be undone.')) {
+      // Show loading state
+      const button = event.target;
+      const originalContent = button.innerHTML;
+      button.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i><span class="text-sm font-medium">Cleaning...</span>';
+      button.disabled = true;
+      
+      // Make AJAX request to cleanup endpoint
+      fetch('/dashboard/cleanup-pdfs/', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-Requested-With': 'XMLHttpRequest',
+          'X-CSRFToken': getCookie('csrftoken')
+        }
+      })
+      .then(response => {
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        return response.json();
+      })
+      .then(data => {
+        if (data.success) {
+          alert(`✅ PDF Cleanup Complete!\n\nFiles removed: ${data.files_removed}\nOrphaned references cleared: ${data.orphaned_cleared}\nRemaining files: ${data.remaining_files}`);
+        } else {
+          alert('❌ Error: ' + data.error);
+        }
+      })
+      .catch(error => {
+        console.error('Error:', error);
+        alert('❌ An error occurred while cleaning up PDFs: ' + error.message + '\n\nPlease check the server console for more details.');
+      })
+      .finally(() => {
+        // Restore button state
+        button.innerHTML = originalContent;
+        button.disabled = false;
+      });
+    }
+  }
+  
+  // Helper function to get CSRF token
+  function getCookie(name) {
+    let cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+      const cookies = document.cookie.split(';');
+      for (let i = 0; i < cookies.length; i++) {
+        const cookie = cookies[i].trim();
+        if (cookie.substring(0, name.length + 1) === (name + '=')) {
+          cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+          break;
+        }
+      }
+    }
+    return cookieValue;
+  }
+</script>
+{% endblock %}

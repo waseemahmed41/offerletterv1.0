@@ -1,0 +1,1080 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Create Offer - Offer Automation System{% endblock %}
+
+{% block extra_css %}
+<style>
+:root {
+  --primary-gradient: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+  --secondary-gradient: linear-gradient(135deg, #f59e0b 0%, #f97316 100%);
+  --success-gradient: linear-gradient(135deg, #10b981 0%, #059669 100%);
+  --glass-bg: rgba(255, 255, 255, 0.7);
+  --glass-border: rgba(255, 255, 255, 0.3);
+  --shadow-soft: 0 4px 20px -5px rgba(0, 0, 0, 0.1);
+  --shadow-hover: 0 20px 40px -10px rgba(0, 0, 0, 0.15);
+}
+
+.create-offer-container {
+  background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 50%, #cbd5e1 100%);
+  min-height: 100vh;
+  position: relative;
+  overflow-x: hidden;
+}
+
+.create-offer-container::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: url('data:image/svg+xml,%3Csvg width="60" height="60" viewBox="0 0 60 60" xmlns="http://www.w3.org/2000/svg"%3E%3Cdefs%3E%3Cpattern id="grid" width="60" height="60" patternUnits="userSpaceOnUse"%3E%3Cpath d="M 60 0 L 0 0 0 60 L 60 60 Z" fill="none" stroke="rgba(99, 102, 241, 0.1)" stroke-width="1"/%3E%3C/pattern%3E%3C/defs%3E%3Crect width="60" height="60" fill="url(%23grid)"/%3E%3C/svg%3E');
+  opacity: 0.03;
+  pointer-events: none;
+}
+
+/* Sidebar Styles - Same as Dashboard */
+.sidebar {
+  background: var(--glass-bg);
+  backdrop-filter: blur(20px);
+  border-right: 1px solid var(--glass-border);
+  box-shadow: var(--shadow-soft);
+  position: relative;
+  z-index: 10;
+}
+
+.nav-item {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  border-radius: 16px;
+  margin: 6px 0;
+  position: relative;
+  overflow: hidden;
+}
+
+.nav-item::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: var(--primary-gradient);
+  transition: left 0.3s ease;
+  z-index: -1;
+}
+
+.nav-item:hover::before {
+  left: 0;
+}
+
+.nav-item:hover {
+  color: white;
+  transform: translateX(8px) scale(1.02);
+  box-shadow: var(--shadow-soft);
+}
+
+.nav-item.active {
+  background: var(--primary-gradient);
+  color: white;
+  box-shadow: var(--shadow-soft);
+  transform: scale(1.02);
+}
+
+/* Custom Theme Switch Styles - Extra Small Version - Same as Dashboard */
+.theme-switch {
+  --toggle-size: 16px;
+  --container-width: 3.5em;
+  --container-height: 1.5em;
+  --container-radius: 5em;
+  --container-light-bg: #3D7EAE;
+  --container-night-bg: #1D1F2C;
+  --circle-container-diameter: 2.2em;
+  --sun-moon-diameter: 1.4em;
+  --sun-bg: #ECCA2F;
+  --moon-bg: #C4C9D1;
+  --spot-color: #959DB1;
+  --circle-container-offset: calc((var(--circle-container-diameter) - var(--container-height)) / 2 * -1);
+  --stars-color: #fff;
+  --clouds-color: #F3FDFF;
+  --back-clouds-color: #AACADF;
+  --transition: .5s cubic-bezier(0, -0.02, 0.4, 1.25);
+  --circle-transition: .3s cubic-bezier(0, -0.02, 0.35, 1.17);
+}
+
+.theme-switch, .theme-switch *, .theme-switch *::before, .theme-switch *::after {
+  -webkit-box-sizing: border-box;
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  font-size: var(--toggle-size);
+}
+
+.theme-switch__container {
+  width: var(--container-width);
+  height: var(--container-height);
+  background-color: var(--container-light-bg);
+  border-radius: var(--container-radius);
+  overflow: hidden;
+  cursor: pointer;
+  -webkit-box-shadow: 0em -0.062em 0.062em rgba(0, 0, 0, 0.25), 0em 0.062em 0.125em rgba(255, 255, 255, 0.94);
+  box-shadow: 0em -0.062em 0.062em rgba(0, 0, 0, 0.25), 0em 0.062em 0.125em rgba(255, 255, 255, 0.94);
+  -webkit-transition: var(--transition);
+  -o-transition: var(--transition);
+  transition: var(--transition);
+  position: relative;
+}
+
+.theme-switch__container::before {
+  content: "";
+  position: absolute;
+  z-index: 1;
+  inset: 0;
+  -webkit-box-shadow: 0em 0.05em 0.187em rgba(0, 0, 0, 0.25) inset, 0em 0.05em 0.187em rgba(0, 0, 0, 0.25) inset;
+  box-shadow: 0em 0.05em 0.187em rgba(0, 0, 0, 0.25) inset, 0em 0.05em 0.187em rgba(0, 0, 0, 0.25) inset;
+  border-radius: var(--container-radius)
+}
+
+.theme-switch__checkbox {
+  display: none;
+}
+
+.theme-switch__circle-container {
+  width: var(--circle-container-diameter);
+  height: var(--circle-container-diameter);
+  background-color: rgba(255, 255, 255, 0.1);
+  position: absolute;
+  left: var(--circle-container-offset);
+  top: var(--circle-container-offset);
+  border-radius: var(--container-radius);
+  -webkit-box-shadow: inset 0 0 0 3.375em rgba(255, 255, 255, 0.1), inset 0 0 0 3.375em rgba(255, 255, 255, 0.1), 0 0 0 0.625em rgba(255, 255, 255, 0.1), 0 0 0 1.25em rgba(255, 255, 255, 0.1);
+  box-shadow: inset 0 0 0 3.375em rgba(255, 255, 255, 0.1), inset 0 0 0 3.375em rgba(255, 255, 255, 0.1), 0 0 0 0.625em rgba(255, 255, 255, 0.1), 0 0 0 1.25em rgba(255, 255, 255, 0.1);
+  display: -webkit-box;
+  display: -ms-flexbox;
+  display: flex;
+  -webkit-transition: var(--circle-transition);
+  -o-transition: var(--circle-transition);
+  transition: var(--circle-transition);
+  pointer-events: none;
+}
+
+.theme-switch__sun-moon-container {
+  pointer-events: auto;
+  position: relative;
+  z-index: 2;
+  width: var(--sun-moon-diameter);
+  height: var(--sun-moon-diameter);
+  margin: auto;
+  border-radius: var(--container-radius);
+  background-color: var(--sun-bg);
+  -webkit-box-shadow: 0.062em 0.062em 0.062em 0em rgba(254, 255, 239, 0.61) inset, 0em -0.062em 0.062em 0em #a1872a inset;
+  box-shadow: 0.062em 0.062em 0.062em 0em rgba(254, 255, 239, 0.61) inset, 0em -0.062em 0.062em 0em #a1872a inset;
+  -webkit-filter: drop-shadow(0.062em 0.125em 0.125em rgba(0, 0, 0, 0.25)) drop-shadow(0em 0.062em 0.125em rgba(0, 0, 0, 0.25));
+  filter: drop-shadow(0.062em 0.125em 0.125em rgba(0, 0, 0, 0.25)) drop-shadow(0em 0.062em 0.125em rgba(0, 0, 0, 0.25));
+  overflow: hidden;
+  -webkit-transition: var(--transition);
+  -o-transition: var(--transition);
+  transition: var(--transition);
+}
+
+.theme-switch__moon {
+  -webkit-transform: translateX(100%);
+  -ms-transform: translateX(100%);
+  transform: translateX(100%);
+  width: 100%;
+  height: 100%;
+  background-color: var(--moon-bg);
+  border-radius: inherit;
+  -webkit-box-shadow: 0.062em 0.062em 0.062em 0em rgba(254, 255, 239, 0.61) inset, 0em -0.062em 0.062em 0em #969696 inset;
+  box-shadow: 0.062em 0.062em 0.062em 0em rgba(254, 255, 239, 0.61) inset, 0em -0.062em 0.062em 0em #969696 inset;
+  -webkit-transition: var(--transition);
+  -o-transition: var(--transition);
+  transition: var(--transition);
+  position: relative;
+}
+
+.theme-switch__spot {
+  position: absolute;
+  top: 0.75em;
+  left: 0.312em;
+  width: 0.75em;
+  height: 0.75em;
+  border-radius: var(--container-radius);
+  background-color: var(--spot-color);
+  -webkit-box-shadow: 0em 0.0312em 0.062em rgba(0, 0, 0, 0.25) inset;
+  box-shadow: 0em 0.0312em 0.062em rgba(0, 0, 0, 0.25) inset;
+}
+
+.theme-switch__spot:nth-of-type(2) {
+  width: 0.375em;
+  height: 0.375em;
+  top: 0.937em;
+  left: 1.375em;
+}
+
+.theme-switch__spot:nth-last-of-type(3) {
+  width: 0.25em;
+  height: 0.25em;
+  top: 0.312em;
+  left: 0.812em;
+}
+
+.theme-switch__clouds {
+  width: 1.25em;
+  height: 1.25em;
+  background-color: var(--clouds-color);
+  border-radius: var(--container-radius);
+  position: absolute;
+  bottom: -0.625em;
+  left: 0.312em;
+  -webkit-box-shadow: 0.937em 0.312em var(--clouds-color), -0.312em -0.312em var(--back-clouds-color), 1.437em 0.375em var(--clouds-color), 0.5em -0.125em var(--back-clouds-color), 2.187em 0 var(--clouds-color), 1.25em -0.062em var(--back-clouds-color), 2.937em 0.312em var(--clouds-color), 2em -0.312em var(--back-clouds-color), 3.625em -0.062em var(--clouds-color), 2.625em 0em var(--back-clouds-color), 4.5em -0.312em var(--clouds-color), 3.375em -0.437em var(--back-clouds-color), 4.625em -1.75em 0 0.437em var(--clouds-color), 4em -0.625em var(--back-clouds-color), 4.125em -2.125em 0 0.437em var(--clouds-color);
+  box-shadow: 0.937em 0.312em var(--clouds-color), -0.312em -0.312em var(--back-clouds-color), 1.437em 0.375em var(--clouds-color), 0.5em -0.125em var(--back-clouds-color), 2.187em 0 var(--clouds-color), 1.25em -0.062em var(--back-clouds-color), 2.937em 0.312em var(--clouds-color), 2em -0.312em var(--back-clouds-color), 3.625em -0.062em var(--clouds-color), 2.625em 0em var(--back-clouds-color), 4.5em -0.312em var(--clouds-color), 3.375em -0.437em var(--back-clouds-color), 4.625em -1.75em 0 0.437em var(--clouds-color), 4em -0.625em var(--back-clouds-color), 4.125em -2.125em 0 0.437em var(--clouds-color);
+  -webkit-transition: 0.5s cubic-bezier(0, -0.02, 0.4, 1.25);
+  -o-transition: 0.5s cubic-bezier(0, -0.02, 0.4, 1.25);
+  transition: 0.5s cubic-bezier(0, -0.02, 0.4, 1.25);
+}
+
+.theme-switch__stars-container {
+  position: absolute;
+  color: var(--stars-color);
+  top: -100%;
+  left: 0.312em;
+  width: 2.75em;
+  height: auto;
+  -webkit-transition: var(--transition);
+  -o-transition: var(--transition);
+  transition: var(--transition);
+}
+
+/* Theme Switch Actions */
+.theme-switch__checkbox:checked + .theme-switch__container {
+  background-color: var(--container-night-bg);
+}
+
+.theme-switch__checkbox:checked + .theme-switch__container .theme-switch__circle-container {
+  left: calc(100% - var(--circle-container-offset) - var(--circle-container-diameter));
+}
+
+.theme-switch__checkbox:checked + .theme-switch__container .theme-switch__circle-container:hover {
+  left: calc(100% - var(--circle-container-offset) - var(--circle-container-diameter) - 0.187em)
+}
+
+.theme-switch__circle-container:hover {
+  left: calc(var(--circle-container-offset) + 0.187em);
+}
+
+.theme-switch__checkbox:checked + .theme-switch__container .theme-switch__moon {
+  -webkit-transform: translate(0);
+  -ms-transform: translate(0);
+  transform: translate(0);
+}
+
+.theme-switch__checkbox:checked + .theme-switch__container .theme-switch__clouds {
+  bottom: -4.062em;
+}
+
+.theme-switch__checkbox:checked + .theme-switch__container .theme-switch__stars-container {
+  top: 50%;
+  -webkit-transform: translateY(-50%);
+  -ms-transform: translateY(-50%);
+  transform: translateY(-50%);
+}
+
+.dark .create-offer-container {
+  background: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #334155 100%);
+}
+
+.dark .sidebar {
+  background: rgba(15, 23, 42, 0.9);
+  border-right-color: rgba(51, 65, 85, 0.5);
+}
+
+/* Dark mode nav items */
+.dark .nav-item {
+  color: #ffffff !important;
+}
+
+.dark .nav-item:hover {
+  color: #ffffff !important;
+}
+    
+    .form-card {
+        background: rgba(255, 255, 255, 0.95);
+        backdrop-filter: blur(20px);
+        border: 1px solid rgba(255, 255, 255, 0.3);
+        border-radius: 20px;
+        padding: 32px;
+        box-shadow: 0 20px 40px -10px rgba(0, 0, 0, 0.2);
+        transform-style: preserve-3d;
+        transition: all 0.3s ease;
+    }
+    
+    .form-card:hover {
+        transform: translateY(-5px) rotateX(2deg);
+        box-shadow: 0 25px 50px -15px rgba(0, 0, 0, 0.3);
+    }
+    
+    .form-group {
+        margin-bottom: 24px;
+    }
+    
+    .form-label {
+        display: block;
+        font-weight: 600;
+        color: #374151;
+        margin-bottom: 8px;
+        font-size: 14px;
+    }
+    
+    .form-control {
+        width: 100%;
+        padding: 14px 16px;
+        border: 2px solid #e5e7eb;
+        border-radius: 12px;
+        font-size: 16px;
+        transition: all 0.3s ease;
+        background: white;
+    }
+    
+    .form-control:focus {
+        outline: none;
+        border-color: #667eea;
+        box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+    }
+    
+    .form-control.bg-gray-50 {
+        background: #f9fafb !important;
+        cursor: default;
+    }
+    
+    .auto-date-display {
+        display: flex;
+        align-items: center;
+        padding: 14px 16px;
+        background: #f9fafb;
+        border: 2px solid #e5e7eb;
+        border-radius: 12px;
+        color: #374151;
+        font-weight: 500;
+    }
+    
+    .form-row {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 20px;
+    }
+    
+    .btn-primary {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 14px 28px;
+        border: none;
+        border-radius: 12px;
+        font-weight: 600;
+        font-size: 16px;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .btn-primary:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 10px 25px -5px rgba(102, 126, 234, 0.4);
+    }
+    
+    .btn-primary::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: -100%;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+        transition: left 0.5s;
+    }
+    
+    .btn-primary:hover::before {
+        left: 100%;
+    }
+    
+    .btn-secondary {
+        background: #6b7280;
+        color: white;
+        padding: 14px 28px;
+        border: none;
+        border-radius: 12px;
+        font-weight: 600;
+        font-size: 16px;
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
+    
+    .btn-secondary:hover {
+        background: #4b5563;
+        transform: translateY(-2px);
+    }
+    
+    .checkbox-group {
+        display: flex;
+        align-items: center;
+        margin: 20px 0;
+        padding: 16px;
+        background: rgba(102, 126, 234, 0.05);
+        border-radius: 12px;
+        border: 2px solid rgba(102, 126, 234, 0.2);
+    }
+    
+    .checkbox-group input[type="checkbox"] {
+        width: 20px;
+        height: 20px;
+        margin-right: 12px;
+        cursor: pointer;
+    }
+    
+    .checkbox-group label {
+        cursor: pointer;
+        font-weight: 500;
+        color: #374151;
+    }
+    
+    .form-header {
+        text-align: center;
+        margin-bottom: 32px;
+    }
+    
+    .form-header h2 {
+        font-size: 2rem;
+        font-weight: 700;
+        color: #1f2937;
+        margin-bottom: 8px;
+    }
+    
+    .form-header p {
+        color: #6b7280;
+        font-size: 1rem;
+    }
+
+    /* Dark mode styles for form header */
+    .dark .form-header h2 {
+        color: #ffffff;
+    }
+    
+    .dark .form-header p {
+        color: #d1d5db;
+    }
+    
+    .error-message {
+        background: rgba(239, 68, 68, 0.1);
+        border: 1px solid rgba(239, 68, 68, 0.3);
+        border-radius: 8px;
+        padding: 12px;
+        color: #dc2626;
+        margin-bottom: 16px;
+        font-size: 14px;
+    }
+    
+    .success-message {
+        background: rgba(34, 197, 94, 0.1);
+        border: 1px solid rgba(34, 197, 94, 0.3);
+        border-radius: 8px;
+        padding: 12px;
+        color: #16a34a;
+        margin-bottom: 16px;
+        font-size: 14px;
+    }
+    
+    @media (max-width: 768px) {
+        .form-row {
+            grid-template-columns: 1fr;
+        }
+        
+        .form-card {
+            padding: 24px;
+            margin: 16px;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="create-offer-container flex relative">
+  <!-- Mobile Menu Toggle -->
+  <button class="lg:hidden fixed top-4 left-4 z-50 p-3 bg-white/80 backdrop-blur-lg rounded-xl shadow-lg" onclick="toggleSidebar()">
+    <i class="fas fa-bars text-gray-700"></i>
+  </button>
+
+  <!-- Sidebar -->
+  <div id="sidebar" class="sidebar w-72 min-h-screen p-6 fixed left-0 top-0 transition-transform duration-300 z-40 lg:translate-x-0 -translate-x-full">
+    <div class="mb-10 fade-in">
+      <div class="flex items-center space-x-4">
+        <img src="{% static 'logo/image.png' %}" alt="T-Home Logo" class="w-14 h-14 rounded-full shadow-lg border-2 border-white/50">
+        <div>
+          <h2 class="text-xl font-bold text-gray-800 dark:text-white">T-Home</h2>
+          <p class="text-xs text-gray-600 dark:text-gray-300">Your Trusted Partner</p>
+          <p class="text-xs text-indigo-600 font-medium mt-1 dark:text-indigo-400">Welcome, {{ user.first_name|default:user.username }}</p>
+        </div>
+      </div>
+    </div>
+    
+    <nav class="space-y-2">
+      <a href="{% url 'offers:dashboard' %}" class="nav-item flex items-center space-x-4 p-4 text-gray-700 dark:text-white relative">
+        <i class="fas fa-tachometer-alt w-5 text-lg"></i>
+        <span class="font-medium">Dashboard</span>
+      </a>
+      <a href="{% url 'offers:create_offer' %}" class="nav-item active flex items-center space-x-4 p-4 text-gray-700 dark:text-white relative">
+        <i class="fas fa-plus-circle w-5 text-lg"></i>
+        <span class="font-medium">Create Offer</span>
+      </a>
+      <a href="{% url 'offers:bulk_upload' %}" class="nav-item flex items-center space-x-4 p-4 text-gray-700 dark:text-white relative">
+        <i class="fas fa-upload w-5 text-lg"></i>
+        <span class="font-medium">Bulk Upload</span>
+      </a>
+      <a href="{% url 'offers:templates' %}" class="nav-item flex items-center space-x-4 p-4 text-gray-700 dark:text-white relative">
+        <i class="fas fa-file-alt w-5 text-lg"></i>
+        <span class="font-medium">Templates</span>
+      </a>
+      <a href="{% url 'offers:candidate_list' %}" class="nav-item flex items-center space-x-4 p-4 text-gray-700 dark:text-white relative">
+        <i class="fas fa-users w-5 text-lg"></i>
+        <span class="font-medium">Candidates</span>
+      </a>
+    </nav>
+    
+    <div class="mt-auto pt-8">
+      <!-- Theme Toggle in Sidebar -->
+      <div class="mb-4">
+        <label class="theme-switch">
+          <input type="checkbox" class="theme-switch__checkbox" id="themeToggle">
+          <div class="theme-switch__container">
+            <div class="theme-switch__clouds"></div>
+            <div class="theme-switch__stars-container">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 144 55" fill="none">
+                <path fill-rule="evenodd" clip-rule="evenodd" d="M135.831 3.00688C135.055 3.85027 134.111 4.29946 133 4.35447C134.111 4.40947 135.055 4.85867 135.831 5.71123C136.607 6.55462 136.996 7.56303 136.996 8.72727C136.996 7.95722 137.172 7.25134 137.525 6.59129C137.886 5.93124 138.372 5.39954 138.980 5.00535C139.598 4.60199 140.268 4.39114 141 4.35447C139.880 4.29030 138.936 3.85027 138.160 3.00688C137.384 2.16348 136.996 1.16425 136.996 0C136.996 1.16425 136.607 2.16348 135.831 3.00688ZM31 23.3545C32.1114 23.2995 33.0551 22.8503 33.8313 22.0069C34.6075 21.1635 34.9956 20.1642 34.9956 19C34.9956 20.1642 35.3837 21.1635 36.1599 22.0069C36.9361 22.8503 37.8798 23.2903 39 23.3545C38.2679 23.3911 37.5976 23.6020 36.9802 24.0053C36.3716 24.3995 35.8864 24.9312 35.5248 25.5913C35.1720 26.2513 34.9956" fill="currentColor"></path>
+              </svg>
+            </div>
+            <div class="theme-switch__circle-container">
+              <div class="theme-switch__sun-moon-container">
+                <div class="theme-switch__moon">
+                  <div class="theme-switch__spot"></div>
+                  <div class="theme-switch__spot"></div>
+                  <div class="theme-switch__spot"></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </label>
+      </div>
+      
+      <a href="{% url 'accounts:login' %}" class="flex items-center space-x-4 p-4 text-red-600 hover:bg-red-50 rounded-xl transition-all duration-300 backdrop-blur-sm">
+        <i class="fas fa-sign-out-alt w-5 text-lg"></i>
+        <span class="font-medium">Logout</span>
+      </a>
+    </div>
+  </div>
+  
+  <!-- Main Content -->
+  <div class="flex-1 p-4 lg:p-8 lg:ml-72">
+    <div class="max-w-4xl mx-auto">
+      <!-- Form Header -->
+      <div class="form-header">
+                <div class="w-20 h-20 bg-gradient-to-br from-purple-500 to-indigo-600 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <i class="fas fa-file-contract text-white text-3xl"></i>
+                </div>
+                <h2>Create New Offer</h2>
+                <p>Fill in the candidate details to create a new offer letter</p>
+            </div>
+            
+            <!-- Form Card -->
+            <div class="form-card">
+                {% if messages %}
+                    {% for message in messages %}
+                        <div class="{% if message.tags == 'error' %}error-message{% else %}success-message{% endif %}">
+                            {{ message }}
+                        </div>
+                    {% endfor %}
+                {% endif %}
+                
+                <form method="post">
+                    {% csrf_token %}
+                    
+                    <!-- Work ID Preview -->
+                    <div class="mb-6 p-4 bg-blue-50 border border-blue-200 rounded-lg">
+                        <div class="flex items-center">
+                            <i class="fas fa-id-badge text-blue-600 mr-3 text-xl"></i>
+                            <div>
+                                <h4 class="font-semibold text-blue-800">Work ID Preview</h4>
+                                <p class="text-sm text-blue-600">This Work ID will be assigned to the candidate:</p>
+                                <div class="mt-2">
+                                    <span class="text-lg font-mono font-bold text-blue-900" id="workIdPreview">--</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Personal Information -->
+                    <div class="mb-8">
+                        <h3 class="text-lg font-semibold text-gray-800 mb-4 flex items-center">
+                            <i class="fas fa-user mr-2 text-indigo-500"></i>
+                            Personal Information
+                        </h3>
+                        
+                        <div class="form-group">
+                            <label for="{{ form.name.id_for_label }}" class="form-label">Full Name *</label>
+                            {{ form.name }}
+                            {% if form.name.errors %}
+                                <div class="error-message">{{ form.name.errors.0 }}</div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="{{ form.email.id_for_label }}" class="form-label">Email Address *</label>
+                                {{ form.email }}
+                                {% if form.email.errors %}
+                                    <div class="error-message">{{ form.email.errors.0 }}</div>
+                                {% endif %}
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="{{ form.phone.id_for_label }}" class="form-label">Phone Number *</label>
+                                {{ form.phone }}
+                                {% if form.phone.errors %}
+                                    <div class="error-message">{{ form.phone.errors.0 }}</div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Professional Information -->
+                    <div class="mb-8">
+                        <h3 class="text-lg font-semibold text-gray-800 mb-4 flex items-center">
+                            <i class="fas fa-briefcase mr-2 text-indigo-500"></i>
+                            Professional Information
+                        </h3>
+                        
+                        <div class="form-group">
+                            <label for="{{ form.role.id_for_label }}" class="form-label">Job Role *</label>
+                            {{ form.role }}
+                            {% if form.role.errors %}
+                                <div class="error-message">{{ form.role.errors.0 }}</div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="form-group">
+                            <label class="form-label">Offer Letter Date</label>
+                            <div class="auto-date-display">
+                                <i class="fas fa-calendar-alt mr-2 text-blue-600"></i>
+                                Today: {{ today_date }}
+                            </div>
+                            <small class="text-gray-500 mt-1 block">Letter date is automatically set to today's date</small>
+                            {{ form.letter_date }}
+                            {% if form.letter_date.errors %}
+                                <div class="error-message">{{ form.letter_date.errors.0 }}</div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="{{ form.joining_date.id_for_label }}" class="form-label">Joining Date *</label>
+                            {{ form.joining_date }}
+                            {% if form.joining_date.errors %}
+                                <div class="error-message">{{ form.joining_date.errors.0 }}</div>
+                            {% endif %}
+                        </div>
+                    </div>
+                    
+                    <!-- Action Options -->
+                    <div class="checkbox-group">
+                        <input type="checkbox" name="generate_send" id="generate_send" value="true">
+                        <label for="generate_send">
+                            <strong>Generate and Send Offer Letter Immediately</strong>
+                            <br>
+                            <small class="text-gray-600">Check this box to automatically generate the offer letter and send it to the candidate's email address</small>
+                        </label>
+                    </div>
+                    
+                    <!-- Form Actions -->
+                    <div class="flex justify-between items-center mt-8">
+                        <a href="{% url 'offers:dashboard' %}" class="btn-secondary">
+                            <i class="fas fa-arrow-left mr-2"></i>
+                            Back to Dashboard
+                        </a>
+                        
+                        <div class="space-x-3">
+                            <button type="submit" name="save_only" value="true" class="btn-secondary">
+                                <i class="fas fa-save mr-2"></i>
+                                Save Only
+                            </button>
+                            <button type="submit" class="btn-primary">
+                                <i class="fas fa-paper-plane mr-2"></i>
+                                Create Offer
+                            </button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Confirmation Popup Modal -->
+<div id="confirmationModal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50 backdrop-blur-sm">
+    <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl p-8 max-w-md w-full mx-4 transform transition-all duration-300 scale-95 opacity-0" id="modalContent">
+        <!-- Confirmation State -->
+        <div id="confirmState" class="text-center">
+            <div class="mb-6">
+                <div class="w-20 h-20 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-full flex items-center justify-center mx-auto shadow-lg animate-pulse">
+                    <i class="fas fa-envelope text-white text-3xl"></i>
+                </div>
+            </div>
+            
+            <h3 class="text-2xl font-bold text-gray-800 dark:text-white mb-3">Confirm Offer Generation</h3>
+            <p class="text-gray-600 dark:text-gray-300 mb-8 text-lg" id="confirmMessage">Are you sure you want to generate and send the offer letter?</p>
+            
+            <div class="flex space-x-4 justify-center">
+                <button onclick="closeConfirmationPopup()" class="px-8 py-4 bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-gray-200 rounded-xl hover:bg-gray-300 dark:hover:bg-gray-600 transition-all duration-200 font-semibold shadow-md hover:shadow-lg transform hover:-translate-y-1">
+                    <i class="fas fa-times mr-2"></i>
+                    Cancel
+                </button>
+                <button onclick="confirmAndSubmit()" id="confirmButton" class="px-8 py-4 bg-gradient-to-r from-indigo-500 to-purple-600 text-white rounded-xl hover:from-indigo-600 hover:to-purple-700 transition-all duration-200 font-semibold shadow-md hover:shadow-lg transform hover:-translate-y-1">
+                    <i class="fas fa-paper-plane mr-2"></i>
+                    <span id="confirmButtonText">Create Offer</span>
+                </button>
+            </div>
+        </div>
+        
+        <!-- Loading State -->
+        <div id="loadingState" class="hidden text-center">
+            <div class="mb-8">
+                <div class="relative w-24 h-24 mx-auto">
+                    <!-- Outer rotating ring -->
+                    <div class="absolute inset-0 border-4 border-indigo-500 border-t-transparent rounded-full animate-spin"></div>
+                    <!-- Inner rotating ring -->
+                    <div class="absolute inset-2 border-4 border-purple-600 border-t-transparent rounded-full animate-spin animation-delay-150"></div>
+                    <!-- Center icon -->
+                    <div class="absolute inset-0 flex items-center justify-center">
+                        <i class="fas fa-file-alt text-indigo-600 text-2xl animate-pulse"></i>
+                    </div>
+                </div>
+            </div>
+            
+            <h3 class="text-2xl font-bold text-gray-800 dark:text-white mb-4">Processing Your Request</h3>
+            <div class="space-y-3 text-gray-600 dark:text-gray-300">
+                <p class="flex items-center justify-center">
+                    <i class="fas fa-cog animate-spin mr-2"></i>
+                    Generating offer letter...
+                </p>
+                <p class="flex items-center justify-center">
+                    <i class="fas fa-envelope-open-text mr-2"></i>
+                    Converting to PDF...
+                </p>
+                <p class="flex items-center justify-center">
+                    <i class="fas fa-paper-plane animate-bounce mr-2"></i>
+                    Sending email...
+                </p>
+            </div>
+            
+            <!-- Progress bar -->
+            <div class="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-3 mb-6 overflow-hidden">
+                <div id="progressBar" class="bg-gradient-to-r from-indigo-500 to-purple-600 h-3 rounded-full transition-all duration-500" style="width: 0%"></div>
+            </div>
+        </div>
+        
+        <!-- Success State -->
+        <div id="successState" class="hidden text-center">
+            <div class="mb-6">
+                <div class="w-20 h-20 bg-gradient-to-br from-green-400 to-green-600 rounded-full flex items-center justify-center mx-auto shadow-lg animate-bounce">
+                    <i class="fas fa-check text-white text-3xl"></i>
+                </div>
+            </div>
+            <h3 class="text-2xl font-bold text-gray-800 dark:text-white mb-3">Offer Sent Successfully!</h3>
+            <p class="text-gray-600 dark:text-gray-300 mb-6 text-lg">The offer letter has been generated and sent to the candidate.</p>
+            <div class="bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg p-4 mb-6">
+                <p class="text-green-800 dark:text-green-200 text-sm">
+                    <i class="fas fa-check-circle mr-2"></i>
+                    Email delivered successfully
+                </p>
+            </div>
+            <button onclick="closeConfirmationPopup()" class="px-8 py-4 bg-green-500 hover:bg-green-600 text-white rounded-xl transition-all duration-200 font-semibold shadow-md hover:shadow-lg transform hover:-translate-y-1">
+                <i class="fas fa-check mr-2"></i>
+                Close
+            </button>
+        </div>
+        
+        <!-- Error State -->
+        <div id="errorState" class="hidden text-center">
+            <div class="mb-6">
+                <div class="w-20 h-20 bg-gradient-to-br from-red-400 to-red-600 rounded-full flex items-center justify-center mx-auto shadow-lg animate-pulse">
+                    <i class="fas fa-exclamation-triangle text-white text-3xl"></i>
+                </div>
+            </div>
+            <h3 class="text-2xl font-bold text-gray-800 dark:text-white mb-3">Sending Failed</h3>
+            <p class="text-gray-600 dark:text-gray-300 mb-6 text-lg" id="errorMessage">There was an error sending the offer letter.</p>
+            <div class="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-4 mb-6">
+                <p class="text-red-800 dark:text-red-200 text-sm">
+                    <i class="fas fa-exclamation-circle mr-2"></i>
+                    Please try again or contact support
+                </p>
+            </div>
+            <button onclick="closeConfirmationPopup()" class="px-8 py-4 bg-red-500 hover:bg-red-600 text-white rounded-xl transition-all duration-200 font-semibold shadow-md hover:shadow-lg transform hover:-translate-y-1">
+                <i class="fas fa-redo mr-2"></i>
+                Try Again
+            </button>
+        </div>
+    </div>
+</div>
+
+<style>
+@keyframes animation-delay-150 {
+    0%, 80% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+</style>
+
+<script>
+    // Auto-generate work ID preview (optional enhancement)
+    document.addEventListener('DOMContentLoaded', function() {
+        const form = document.querySelector('form');
+        const nameInput = document.getElementById('{{ form.name.id_for_label }}');
+        const emailInput = document.getElementById('{{ form.email.id_for_label }}');
+        const checkbox = document.getElementById('generate_send');
+        
+        // Validate form before submission
+        form.addEventListener('submit', function(e) {
+            const name = nameInput.value.trim();
+            const email = emailInput.value.trim();
+            
+            if (!name) {
+                e.preventDefault();
+                alert('Please enter the candidate name');
+                nameInput.focus();
+                return;
+            }
+            
+            if (!email) {
+                e.preventDefault();
+                alert('Please enter the candidate email address');
+                emailInput.focus();
+                return;
+            }
+            
+            // If generate and send is checked, show confirmation popup
+            if (checkbox.checked) {
+                e.preventDefault();
+                showConfirmationPopup(email, form);
+            }
+        });
+        
+        // Add input animations
+        const inputs = document.querySelectorAll('.form-control');
+        inputs.forEach(input => {
+            input.addEventListener('focus', function() {
+                this.parentElement.style.transform = 'scale(1.02)';
+            });
+            
+            input.addEventListener('blur', function() {
+                this.parentElement.style.transform = 'scale(1)';
+            });
+        });
+    });
+
+    // Theme Toggle Functionality
+    const themeToggle = document.getElementById('themeToggle');
+    const html = document.documentElement;
+
+    // Check for saved theme preference or default to light
+    const currentTheme = localStorage.getItem('theme') || 'light';
+    if (currentTheme === 'dark') {
+        html.classList.add('dark');
+        themeToggle.checked = true;
+    }
+
+    themeToggle.addEventListener('change', () => {
+        html.classList.toggle('dark');
+        
+        if (html.classList.contains('dark')) {
+            // Switch to dark mode
+            localStorage.setItem('theme', 'dark');
+        } else {
+            // Switch to light mode
+            localStorage.setItem('theme', 'light');
+        }
+    });
+
+    function toggleSidebar() {
+        const sidebar = document.getElementById('sidebar');
+        sidebar.classList.toggle('translate-x-0');
+        sidebar.classList.toggle('-translate-x-full');
+    }
+
+    // Popup functions
+    let currentForm = null;
+
+    function showConfirmationPopup(email, form) {
+        currentForm = form;
+        const modal = document.getElementById('confirmationModal');
+        const confirmMessage = document.getElementById('confirmMessage');
+        const modalContent = document.getElementById('modalContent');
+        
+        confirmMessage.textContent = `Are you sure you want to generate and send the offer letter to ${email}?`;
+        
+        // Reset states
+        document.getElementById('confirmState').classList.remove('hidden');
+        document.getElementById('loadingState').classList.add('hidden');
+        document.getElementById('successState').classList.add('hidden');
+        document.getElementById('errorState').classList.add('hidden');
+        
+        // Reset progress bar
+        updateProgress(0);
+        
+        // Show modal with animation
+        modal.classList.remove('hidden');
+        modal.classList.add('flex');
+        
+        // Animate entrance
+        setTimeout(() => {
+            modalContent.classList.remove('scale-95', 'opacity-0');
+            modalContent.classList.add('scale-100', 'opacity-100');
+        }, 50);
+    }
+
+    function closeConfirmationPopup() {
+        const modal = document.getElementById('confirmationModal');
+        modal.classList.add('hidden');
+        modal.classList.remove('flex');
+    }
+
+    function confirmAndSubmit() {
+        if (!currentForm) return;
+        
+        // Show loading state with animation
+        showLoadingState();
+        
+        // Create form data
+        const formData = new FormData(currentForm);
+        formData.append('generate_send', 'true');
+        
+        // Submit via fetch
+        fetch(currentForm.action, {
+            method: 'POST',
+            body: formData,
+            headers: {
+                'X-CSRFToken': getCookie('csrftoken'),
+                'X-Requested-With': 'XMLHttpRequest'
+            }
+        })
+        .then(response => {
+            console.log('Response status:', response.status);
+            updateProgress(60); // Update progress to 60%
+            return response.json();
+        })
+        .then(data => {
+            console.log('Response data:', data);
+            updateProgress(100); // Complete progress
+            setTimeout(() => {
+                if (data.success) {
+                    showSuccessState();
+                } else {
+                    showErrorState(data.message || 'Failed to send offer letter');
+                }
+            }, 500); // Brief pause to show 100% progress
+        })
+        .catch(error => {
+            console.error('Fetch error:', error);
+            updateProgress(100);
+            setTimeout(() => {
+                showErrorState('Network error occurred');
+            }, 500);
+        });
+    }
+
+    function showLoadingState() {
+        // Hide confirmation state
+        document.getElementById('confirmState').classList.add('hidden');
+        
+        // Show loading state
+        document.getElementById('loadingState').classList.remove('hidden');
+        
+        // Animate modal entrance
+        const modalContent = document.getElementById('modalContent');
+        modalContent.classList.remove('scale-95', 'opacity-0');
+        modalContent.classList.add('scale-100', 'opacity-100');
+        
+        // Start progress animation
+        updateProgress(20);
+        
+        // Simulate progress steps
+        setTimeout(() => updateProgress(40), 800);
+        setTimeout(() => updateProgress(60), 1600);
+    }
+
+    function updateProgress(percentage) {
+        const progressBar = document.getElementById('progressBar');
+        if (progressBar) {
+            progressBar.style.width = percentage + '%';
+        }
+    }
+
+    function showSuccessState() {
+        document.getElementById('loadingState').classList.add('hidden');
+        document.getElementById('successState').classList.remove('hidden');
+        
+        // Change modal background for success
+        const modal = document.getElementById('confirmationModal');
+        modal.querySelector('.bg-white').classList.add('bg-green-50');
+        modal.querySelector('.bg-white').classList.remove('bg-white');
+        
+        // Redirect after delay
+        setTimeout(() => {
+            window.location.href = '{% url "offers:dashboard" %}';
+        }, 2000);
+    }
+
+    function showErrorState(message) {
+        document.getElementById('loadingState').classList.add('hidden');
+        document.getElementById('errorState').classList.remove('hidden');
+        document.getElementById('errorMessage').textContent = message;
+        
+        // Change modal background for error
+        const modal = document.getElementById('confirmationModal');
+        modal.querySelector('.bg-white').classList.add('bg-red-50');
+        modal.querySelector('.bg-white').classList.remove('bg-white');
+    }
+
+    function getCookie(name) {
+        let cookieValue = null;
+        if (document.cookie && document.cookie !== '') {
+            const cookies = document.cookie.split(';');
+            for (let i = 0; i < cookies.length; i++) {
+                const cookie = cookies[i].trim();
+                if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                    break;
+                }
+            }
+        }
+        return cookieValue;
+    }
+
+    // Generate and display work ID
+    async function generateWorkId() {
+        try {
+            const response = await fetch('{% url "offers:get_next_work_id" %}');
+            const data = await response.json();
+            
+            if (data.work_id) {
+                document.getElementById('workIdPreview').textContent = data.work_id;
+            } else {
+                document.getElementById('workIdPreview').textContent = 'Error';
+            }
+        } catch (error) {
+            console.error('Error fetching work ID:', error);
+            document.getElementById('workIdPreview').textContent = 'Error';
+        }
+    }
+
+    // Generate work ID when page loads
+    document.addEventListener('DOMContentLoaded', function() {
+        generateWorkId();
+    });
+</script>
+{% endblock %}
