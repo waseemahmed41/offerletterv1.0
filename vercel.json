@@ -19,10 +19,5 @@
   ],
   "env": {
     "DJANGO_SETTINGS_MODULE": "offer_automation.settings"
-  },
-  "functions": {
-    "manage.py": {
-      "runtime": "@vercel/python@3.9"
-    }
   }
 }
