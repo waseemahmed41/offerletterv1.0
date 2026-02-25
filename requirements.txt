@@ -15,6 +15,5 @@ sendgrid==6.10.0
 python-dotenv==1.0.0
 docx2pdf==0.1.8
 flower==0.9.4
-python-celery==5.3.4
 kombu==5.3.4
 billiard>=4.1.0
