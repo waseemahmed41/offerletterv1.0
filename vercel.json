@@ -3,11 +3,6 @@
   "buildCommand": "npm run vercel-build",
   "outputDirectory": ".",
   "installCommand": "npm install",
-  "functions": {
-    "api/index.py": {
-      "runtime": "@vercel/python"
-    }
-  },
   "routes": [
     {
       "src": "/static/(.*)",
