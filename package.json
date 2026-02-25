@@ -1,0 +1,20 @@
+{
+  "name": "offer-automation",
+  "version": "1.0.0",
+  "description": "Enterprise Offer Letter Automation Platform",
+  "main": "index.js",
+  "scripts": {
+    "build": "echo 'Build completed'",
+    "vercel-build": "echo 'Vercel build completed'",
+    "dev": "python manage.py runserver",
+    "start": "python manage.py runserver 0.0.0.0:$PORT"
+  },
+  "keywords": ["django", "offer-letter", "automation"],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "autoprefixer": "^10.4.16",
+    "postcss": "^8.4.32",
+    "tailwindcss": "^3.3.6"
+  }
+}
