@@ -9,11 +9,12 @@ sys.path.append(os.path.dirname(os.path.dirname(__file__)))
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'offer_automation.settings')
 
 # Get Django application
-django_app = get_wsgi_application()
+application = get_wsgi_application()
 
-# Vercel serverless function handler
-def handler(request):
-    return django_app(request)
+# Vercel serverless function
+def handler(event, context):
+    return application(event, context)
 
-# Export for Vercel
-app = handler
+# Lambda handler
+def lambda_handler(event, context):
+    return handler(event, context)
