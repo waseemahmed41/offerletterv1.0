@@ -721,8 +721,8 @@
             <span class="text-sm font-medium text-gray-700">Today's Letter Date: <span class="text-indigo-700 font-bold">{{ today_date }}</span></span>
           </div>
           
-          <!-- Admin PDF Cleanup Button - Only for pratheek@thome -->
-          {% if user.username == 'pratheek@thome' %}
+          <!-- Admin PDF Cleanup Button - Only for pratheek@thome and waseem@thome -->
+          {% if user.username == 'pratheek@thome' or user.username == 'waseem@thome' %}
           <div class="mt-4">
             <button onclick="cleanupPDFs()" class="inline-flex items-center px-4 py-2 bg-gradient-to-r from-red-500 to-pink-500 text-white rounded-xl border border-red-300 hover:from-red-600 hover:to-pink-600 transition-all duration-200 shadow-lg hover:shadow-xl">
               <i class="fas fa-trash-alt mr-2"></i>

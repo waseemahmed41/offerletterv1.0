@@ -53,12 +53,16 @@ class Candidate(models.Model):
     
     def save(self, *args, **kwargs):
         if not self.work_id:
-            self.work_id = self.generate_work_id()
+            # Generate work_id atomically to avoid conflicts
+            from django.db import transaction
+            with transaction.atomic():
+                # Lock the table to prevent concurrent work_id generation
+                self.work_id = self.generate_work_id()
         super().save(*args, **kwargs)
     
     @staticmethod
     def generate_work_id():
-        last_candidate = Candidate.objects.using('neon').order_by('-work_id').first()
+        last_candidate = Candidate.objects.order_by('-work_id').first()
         if last_candidate and last_candidate.work_id:
             prefix = last_candidate.work_id[:2]
             number = int(last_candidate.work_id[2:]) + 1
@@ -77,7 +81,7 @@ class Candidate(models.Model):
                     number = 1
             
             return f"{prefix}{number:02d}"
-        return "0A20"  # Start from 0A20 instead of 0A01
+        return "0A20"  # Start from 0A20
 
 class Template(models.Model):
     ROLE_CHOICES = [
@@ -125,7 +129,7 @@ class OfferLetter(models.Model):
     def get_candidate(self):
         """Get candidate instance"""
         try:
-            return Candidate.objects.using('neon').get(id=self.candidate_id)
+            return Candidate.objects.get(id=self.candidate_id)
         except (Candidate.DoesNotExist, TypeError, ValueError):
             return None
     

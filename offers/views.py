@@ -22,13 +22,13 @@ from .email_templates import get_offer_letter_email_content
 def dashboard(request):
     """Main dashboard view"""
     # Get statistics
-    total_candidates = Candidate.objects.using('neon').count()
-    pending_candidates = Candidate.objects.using('neon').filter(status='pending').count()
-    offer_generated = Candidate.objects.using('neon').filter(status='offer_generated').count()
-    offer_sent = Candidate.objects.using('neon').filter(status='offer_sent').count()
+    total_candidates = Candidate.objects.count()
+    pending_candidates = Candidate.objects.filter(status='pending').count()
+    offer_generated = Candidate.objects.filter(status='offer_generated').count()
+    offer_sent = Candidate.objects.filter(status='offer_sent').count()
     
     # Recent candidates
-    recent_candidates = Candidate.objects.using('neon').order_by('-created_at')[:10]
+    recent_candidates = Candidate.objects.order_by('-created_at')[:10]
     
     # Get today's date for letter date display
     from django.utils import timezone
@@ -113,7 +113,7 @@ def generate_and_send_offer(request):
             except (ValueError, TypeError):
                 return JsonResponse({'error': 'Invalid candidate ID'}, status=400)
             
-            candidate = Candidate.objects.using('neon').get(id=candidate_id)
+            candidate = Candidate.objects.get(id=candidate_id)
             
             # Get role-specific template
             template = get_template_for_role(candidate.role)
@@ -170,7 +170,7 @@ def generate_and_send_offer(request):
                 
                 # Update status
                 candidate.status = 'offer_sent'
-                candidate.save(using='neon')
+                candidate.save()
                 offer_letter.sent_at = timezone.now()
                 offer_letter.save()
                 
@@ -192,7 +192,7 @@ def generate_and_send_offer(request):
 @login_required
 def candidate_list(request):
     """List all candidates with filtering"""
-    candidates = Candidate.objects.using('neon').order_by('-created_at')
+    candidates = Candidate.objects.order_by('-created_at')
     
     # Filter by status
     status_filter = request.GET.get('status')
@@ -206,7 +206,7 @@ class CandidateDetailView(View):
     
     @method_decorator(login_required)
     def get(self, request, candidate_id):
-        candidate = get_object_or_404(Candidate.objects.using('neon'), id=candidate_id)
+        candidate = get_object_or_404(Candidate, id=candidate_id)
         
         if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
             # Return JSON for AJAX/popup requests
@@ -249,7 +249,7 @@ def create_offer(request):
             
             candidate.created_by_id = request.user.id
             candidate.created_by_username = request.user.username
-            candidate.save(using='neon')
+            candidate.save()
             
             # Check if user wants to generate and send immediately
             generate_send = request.POST.get('generate_send', False)
@@ -312,7 +312,7 @@ def create_offer(request):
                         
                         # Update status
                         candidate.status = 'offer_sent'
-                        candidate.save(using='neon')
+                        candidate.save()
                         offer_letter.sent_at = timezone.now()
                         offer_letter.save()
                         
@@ -353,7 +353,7 @@ def get_next_work_id(request):
 @login_required
 def templates(request):
     """Template management view"""
-    templates = Template.objects.using('neon').all().order_by('-created_at')
+    templates = Template.objects.all().order_by('-created_at')
     
     context = {
         'templates': templates
@@ -364,8 +364,9 @@ def templates(request):
 @login_required
 def cleanup_pdfs(request):
     """Admin-only PDF cleanup view"""
-    # Only allow pratheek@thome user
-    if request.user.username != 'pratheek@thome':
+    # Only allow pratheek@thome and waseem@thome users
+    allowed_users = ['pratheek@thome', 'waseem@thome']
+    if request.user.username not in allowed_users:
         if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
             return JsonResponse({'success': False, 'error': 'Unauthorized access'})
         messages.error(request, 'You are not authorized to perform this action')
@@ -403,17 +404,15 @@ def cleanup_pdfs(request):
                             files_failed += 1
             
             # Check database for orphaned PDF records
-            databases = ['default', 'neon']
-            for db in databases:
-                offer_letters = OfferLetter.objects.using(db).filter(pdf_file__isnull=False)
-                
-                for offer_letter in offer_letters:
-                    if offer_letter.pdf_file:
-                        pdf_path = offer_letter.pdf_file.path
-                        if not os.path.exists(pdf_path):
-                            # File doesn't exist, clear the database reference
-                            offer_letter.pdf_file.delete(save=True)
-                            orphaned_cleared += 1
+            offer_letters = OfferLetter.objects.filter(pdf_file__isnull=False)
+            
+            for offer_letter in offer_letters:
+                if offer_letter.pdf_file:
+                    pdf_path = offer_letter.pdf_file.path
+                    if not os.path.exists(pdf_path):
+                        # File doesn't exist, clear the database reference
+                        offer_letter.pdf_file.delete(save=True)
+                        orphaned_cleared += 1
             
             # Calculate remaining files
             remaining_files = 0

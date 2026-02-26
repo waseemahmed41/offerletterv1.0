@@ -1,0 +1,69 @@
+# Render Configuration for Offer Letter Automation Platform
+
+## Environment Variables
+Set these in your Render dashboard:
+
+### Database Configuration
+- `DB_NAME`: Your PostgreSQL database name
+- `DB_USER`: Database username  
+- `DB_PASSWORD`: Database password
+- `DB_HOST`: Database hostname
+- `DB_PORT`: Database port (usually 5432)
+
+### Django Configuration
+- `SECRET_KEY`: Django secret key (generate with `python -c 'from django.core.management.utils import get_random_secret_key; print(get_random_secret_key())'`)
+- `DEBUG`: Set to `False` for production
+- `ALLOWED_HOSTS`: Your Render service URL (e.g., `your-service.onrender.com`)
+
+### Email Configuration
+- `SENDGRID_API_KEY`: Your SendGrid API key
+- `DEFAULT_FROM_EMAIL`: Default sender email
+- `EMAIL_HOST_USER`: SendGrid username
+- `EMAIL_HOST_PASSWORD`: SendGrid password
+
+### Redis Configuration (for Celery)
+- `REDIS_URL`: Redis connection URL (e.g., `redis://your-redis-host:6379/0`)
+
+### Google OAuth
+- `GOOGLE_OAUTH2_CLIENT_ID`: Google OAuth client ID
+- `GOOGLE_OAUTH2_CLIENT_SECRET`: Google OAuth client secret
+- `ALLOWED_EMAILS`: Comma-separated list of allowed emails
+
+### Other Settings
+- `WEB_CONCURRENCY`: Number of Gunicorn workers (default: 2)
+- `PORT`: Port number (Render sets this automatically)
+
+## Build Command
+```bash
+pip install -r requirements.txt
+python manage.py collectstatic --noinput
+python manage.py migrate --noinput
+```
+
+## Start Command
+```bash
+gunicorn --config gunicorn_config.py offer_automation.wsgi:application
+```
+
+## Render Service Configuration
+- **Type**: Web Service
+- **Runtime**: Python 3
+- **Build Command**: `pip install -r requirements.txt && python manage.py collectstatic --noinput && python manage.py migrate --noinput`
+- **Start Command**: `gunicorn --config gunicorn_config.py offer_automation.wsgi:application`
+- **Health Check Path**: `/admin/`
+- **Auto-Deploy**: Enabled (if using GitHub integration)
+
+## Additional Services Needed
+1. **Neon PostgreSQL Database**: For production data storage (external service)
+2. **Redis**: For Celery task queue and caching
+3. **Background Worker**: For Celery tasks (optional but recommended)
+
+## Background Worker Configuration
+If you want to run Celery workers as a separate service:
+
+**Build Command**: Same as web service
+**Start Command**: `celery -A offer_automation worker -l info`
+
+## Health Checks
+- Web Service: `/admin/` (should redirect to login)
+- Background Worker: Check Celery logs for worker startup

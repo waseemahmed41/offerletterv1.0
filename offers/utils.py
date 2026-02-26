@@ -108,7 +108,7 @@ def generate_offer_letter(candidate, template):
                 
                 # Update candidate status
                 candidate.status = 'offer_generated'
-                candidate.save(using='neon')
+                candidate.save()
                 
                 return offer_letter
             else:
@@ -140,21 +140,22 @@ def get_template_for_role(role):
     
     # First try to find role-specific template
     if role_key:
-        template = Template.objects.using('neon').filter(role=role_key, is_active=True).first()
+        template = Template.objects.filter(role=role_key, is_active=True).first()
         if template:
             return template
     
     # Fallback to general template
-    return Template.objects.using('neon').filter(role__isnull=True, is_active=True).first()
+    return Template.objects.filter(role__isnull=True, is_active=True).first()
 
 def process_bulk_upload(file, created_by):
     """Process bulk upload of candidates from CSV/Excel"""
     try:
         # Read file based on extension
         if file.name.endswith('.csv'):
-            df = pd.read_csv(file)
+            # Read CSV with phone numbers as strings to preserve leading zeros
+            df = pd.read_csv(file, dtype={'phone': str})
         elif file.name.endswith(('.xlsx', '.xls')):
-            df = pd.read_excel(file)
+            df = pd.read_excel(file, dtype={'phone': str})
         else:
             return None, "Unsupported file format"
         
@@ -171,20 +172,54 @@ def process_bulk_upload(file, created_by):
         
         for index, row in df.iterrows():
             try:
+                # Validate email format
+                email = str(row['email']).strip()
+                if '@' not in email or '.' not in email:
+                    errors.append(f"Row {index + 1}: Invalid email format")
+                    continue
+                
+                # Validate phone (basic check)
+                phone = str(row['phone']).strip()
+                # Remove any non-digit characters for validation
+                phone_digits = ''.join(filter(str.isdigit, phone))
+                if len(phone_digits) < 10:
+                    errors.append(f"Row {index + 1}: Phone number too short (minimum 10 digits)")
+                    continue
+                
+                # Validate role
+                role = str(row['role']).strip()
+                valid_roles = [choice[0] for choice in Candidate.ROLE_CHOICES] + \
+                           [choice[1] for choice in Candidate.ROLE_CHOICES]
+                if role not in valid_roles:
+                    errors.append(f"Row {index + 1}: Invalid role '{role}'. Valid roles: {', '.join(valid_roles)}")
+                    continue
+                
+                # Validate joining date
+                try:
+                    joining_date = pd.to_datetime(row['joining_date']).date()
+                    current_date = timezone.now().date()
+                    
+                    if joining_date <= current_date:
+                        errors.append(f"Row {index + 1}: Joining date must be in the future (current: {current_date}, provided: {joining_date})")
+                        continue
+                except Exception as date_error:
+                    errors.append(f"Row {index + 1}: Invalid joining date format: {str(date_error)}")
+                    continue
+                
                 candidate_data = {
                     'name': str(row['name']).strip(),
-                    'email': str(row['email']).strip(),
-                    'phone': str(row['phone']).strip(),
-                    'role': str(row['role']).strip(),
+                    'email': email,
+                    'phone': phone,
+                    'role': role,
                     'letter_date': timezone.now().date(),
-                    'joining_date': pd.to_datetime(row['joining_date']).date(),
+                    'joining_date': joining_date,
                     'created_by_id': created_by.id,
                     'created_by_username': created_by.username,
                 }
                 
                 # Create candidate (work_id will be auto-generated)
                 candidate = Candidate(**candidate_data)
-                candidate.save(using='neon')
+                candidate.save()
                 candidates.append(candidate)
                 
             except Exception as e:

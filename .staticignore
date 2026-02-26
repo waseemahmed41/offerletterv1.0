@@ -1,0 +1,21 @@
+# Ignore files that shouldn't be collected
+*.pyc
+*.pyo
+*.pyd
+.Python
+__pycache__
+.pytest_cache
+.coverage
+.git
+.gitignore
+.env
+.venv
+env/
+venv/
+node_modules/
+.DS_Store
+Thumbs.db
+*.log
+local_settings.py
+db.sqlite3
+media/

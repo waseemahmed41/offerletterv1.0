@@ -1,0 +1,5 @@
+name,email,phone,role,joining_date
+Alice Johnson,alice@example.com,+1234567890,Frontend Developer,2026-12-15
+Bob Smith,bob@example.com,+0987654321,Backend Developer,2026-12-20
+Carol White,carol@example.com,+1122334455,Full Stack Developer,2027-01-01
+David Brown,david@example.com,+5566778899,UI/UX Designer,2027-01-15

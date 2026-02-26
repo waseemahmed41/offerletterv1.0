@@ -1,0 +1,4 @@
+name,email,phone,role,joining_date
+John Doe,john@example.com,+1234567890,Frontend Developer,2024-03-15
+Jane Smith,jane@example.com,+1987654321,Backend Developer,2024-03-20
+Mike Johnson,mike@example.com,+1122334456,Full Stack Developer,2024-04-01
