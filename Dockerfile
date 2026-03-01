@@ -35,15 +35,12 @@ COPY . .
 # Create media directory
 RUN mkdir -p /app/media/templates
 
-# Collect static files
-RUN python manage.py collectstatic --noinput
-
 # Expose port
-EXPOSE 8000
+EXPOSE 10000
 
 # Health check
 HEALTHCHECK --interval=30s --timeout=30s --start-period=5s --retries=3 \
-    CMD curl -f http://localhost:8000/admin/ || exit 1
+    CMD curl -f http://localhost:10000/admin/ || exit 1
 
-# Run Gunicorn
-CMD ["gunicorn", "--config", "gunicorn_config.py", "offer_automation.wsgi:application"]
+# Run Gunicorn with collectstatic at runtime
+CMD ["sh", "-c", "python manage.py collectstatic --noinput && gunicorn --config gunicorn_config.py offer_automation.wsgi:application"]
