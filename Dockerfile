@@ -10,26 +10,20 @@ ENV DEBIAN_FRONTEND=noninteractive
 WORKDIR /app
 
 # Install system dependencies
-RUN apt-get update \
-    && apt-get install -y \
-        --no-install-recommends \
-        gcc \
-        g++ \
-        libpq-dev \
-        libreoffice \
-        libreoffice-writer \
-        fonts-dejavu \
-        fonts-liberation \
-        fonts-liberation1 \
-        fonts-liberation2 \
-        fonts-noto-cjk \
-        fonts-noto-color-emoji \
-        curl \
-        ca-certificates \
+RUN apt-get update && apt-get install -y \
+    --no-install-recommends \
+    gcc \
+    g++ \
+    libpq-dev \
+    libreoffice \
+    libreoffice-writer \
+    fonts-dejavu \
+    fonts-noto-cjk \
+    fonts-noto-color-emoji \
+    curl \
+    ca-certificates \
     && apt-get clean \
-    && rm -rf /var/lib/apt/lists/* \
-    && rm -rf /tmp/* \
-    && rm -rf /var/tmp/*
+    && rm -rf /var/lib/apt/lists/*
 
 # Install Python dependencies
 COPY requirements.txt .
