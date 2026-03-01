@@ -25,23 +25,16 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/6.0/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = os.getenv('SECRET_KEY', 'django-insecure-upqc-8qkbpoqj=tq+&ce9*l4cm5w=s_s0t1uxy$bc^f#(^z-ag')
+SECRET_KEY = os.environ.get('SECRET_KEY')
+
+if not SECRET_KEY:
+    raise ValueError("SECRET_KEY not set in environment variables")
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = os.getenv('DEBUG', 'False').lower() == 'true'
 
-# Production hosts for Render
-ALLOWED_HOSTS = [
-    'localhost', 
-    '127.0.0.1', 
-    'testserver',
-    os.getenv('RENDER_EXTERNAL_HOSTNAME', ''),
-    '.onrender.com'
-]
-
-# Add Render-specific host detection
-if os.getenv('RENDER'):
-    ALLOWED_HOSTS.append(os.getenv('RENDER_EXTERNAL_HOSTNAME', ''))
+# Production hosts - use environment variables only
+ALLOWED_HOSTS = os.getenv("ALLOWED_HOSTS", "").split(",") if os.getenv("ALLOWED_HOSTS") else []
 
 
 # Application definition
@@ -157,7 +150,7 @@ STATICFILES_DIRS = [
 STATIC_ROOT = BASE_DIR / 'staticfiles'
 
 # Media files
-MEDIA_URL = 'media/'
+MEDIA_URL = '/media/'
 MEDIA_ROOT = BASE_DIR / 'media'
 
 # Email Configuration
@@ -181,6 +174,9 @@ LOGOUT_REDIRECT_URL = 'accounts:login'
 # Custom User Model
 AUTH_USER_MODEL = 'accounts.User'
 
+# Default Auto Field
+DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
 # Database Router
 DATABASE_ROUTERS = ['offer_automation.db_router.DatabaseRouter']
 
@@ -198,14 +194,6 @@ if not DEBUG:
 
 # SendGrid Configuration
 SENDGRID_API_KEY = os.getenv('SENDGRID_API_KEY', '')
-
-# Celery Configuration
-CELERY_BROKER_URL = os.getenv('CELERY_BROKER_URL', 'redis://localhost:6379/0')
-CELERY_RESULT_BACKEND = os.getenv('CELERY_RESULT_BACKEND', 'redis://localhost:6379/0')
-CELERY_ACCEPT_CONTENT = ['json']
-CELERY_TASK_SERIALIZER = 'json'
-CELERY_RESULT_SERIALIZER = 'json'
-CELERY_TIMEZONE = TIME_ZONE
 
 # Google OAuth Configuration
 GOOGLE_OAUTH2_CLIENT_ID = os.getenv('GOOGLE_OAUTH2_CLIENT_ID', '')
@@ -242,21 +230,15 @@ LOGGING = {
             'level': 'DEBUG',
             'propagate': False,
         },
+        'django.server': {
+            'handlers': ['console'],
+            'level': 'WARNING',
+            'propagate': False,
+        },
     },
 }
 
 # Production Static Files Configuration
 if not DEBUG:
     STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
-    
-    # Additional production settings
-    SECURE_BROWSER_XSS_FILTER = True
-    SECURE_CONTENT_TYPE_NOSNIFF = True
-    SECURE_HSTS_INCLUDE_SUBDOMAINS = True
-    SECURE_HSTS_SECONDS = 31536000
-    SECURE_REDIRECT_EXEMPT = []
-    SECURE_SSL_REDIRECT = True
-    SESSION_COOKIE_SECURE = True
-    CSRF_COOKIE_SECURE = True
-    X_FRAME_OPTIONS = 'DENY'
 

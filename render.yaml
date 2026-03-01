@@ -21,9 +21,6 @@ Set these in your Render dashboard:
 - `EMAIL_HOST_USER`: SendGrid username
 - `EMAIL_HOST_PASSWORD`: SendGrid password
 
-### Redis Configuration (for Celery)
-- `REDIS_URL`: Redis connection URL (e.g., `redis://your-redis-host:6379/0`)
-
 ### Google OAuth
 - `GOOGLE_OAUTH2_CLIENT_ID`: Google OAuth client ID
 - `GOOGLE_OAUTH2_CLIENT_SECRET`: Google OAuth client secret
@@ -55,15 +52,6 @@ gunicorn --config gunicorn_config.py offer_automation.wsgi:application
 
 ## Additional Services Needed
 1. **Neon PostgreSQL Database**: For production data storage (external service)
-2. **Redis**: For Celery task queue and caching
-3. **Background Worker**: For Celery tasks (optional but recommended)
-
-## Background Worker Configuration
-If you want to run Celery workers as a separate service:
-
-**Build Command**: Same as web service
-**Start Command**: `celery -A offer_automation worker -l info`
 
 ## Health Checks
 - Web Service: `/admin/` (should redirect to login)
-- Background Worker: Check Celery logs for worker startup

@@ -6,7 +6,7 @@ Gunicorn configuration for Render deployment
 import os
 
 # Server socket
-bind = f"0.0.0.0:{os.getenv('PORT', '8000')}"
+bind = f"0.0.0.0:{os.getenv('PORT', '10000')}"
 
 # Worker processes
 workers = int(os.getenv('WEB_CONCURRENCY', '2'))
