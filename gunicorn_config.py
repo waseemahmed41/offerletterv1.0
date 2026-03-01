@@ -9,10 +9,10 @@ import os
 bind = f"0.0.0.0:{os.getenv('PORT', '10000')}"
 
 # Worker processes
-workers = int(os.getenv('WEB_CONCURRENCY', '2'))
+workers = int(os.getenv('WEB_CONCURRENCY', '1'))
 worker_class = "sync"
 worker_connections = 1000
-timeout = 30
+timeout = 120
 keepalive = 2
 
 # Logging

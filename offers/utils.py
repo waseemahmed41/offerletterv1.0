@@ -87,7 +87,7 @@ def convert_to_pdf(docx_path: str) -> str:
             cmd,
             capture_output=True,
             text=True,
-            timeout=30  # 30 second timeout
+            timeout=60  # 60 second timeout for LibreOffice
         )
         
         if result.returncode != 0:
@@ -106,7 +106,7 @@ def convert_to_pdf(docx_path: str) -> str:
         return pdf_path
         
     except subprocess.TimeoutExpired:
-        raise Exception(f"PDF conversion timed out after 30 seconds for file: {docx_path}")
+        raise Exception(f"PDF conversion timed out after 60 seconds for file: {docx_path}")
     
     except subprocess.CalledProcessError as e:
         error_details = e.stderr.strip() if e.stderr else e.stdout.strip()
