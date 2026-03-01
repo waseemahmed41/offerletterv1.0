@@ -10,4 +10,3 @@ gunicorn==21.2.0
 whitenoise==6.6.0
 sendgrid==6.10.0
 python-dotenv==1.0.0
-docx2pdf==0.1.8

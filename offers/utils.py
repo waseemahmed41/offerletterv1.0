@@ -1,8 +1,8 @@
 import os
+import subprocess
 import pandas as pd
 from django.utils import timezone
 from docx import Document
-from docx2pdf import convert
 from django.core.files.storage import default_storage
 from django.core.files.base import ContentFile
 from django.conf import settings
@@ -48,14 +48,72 @@ def process_docx_template(template_path, output_path, data):
         print(f"Error processing DOCX: {str(e)}")
         return False
 
-def convert_docx_to_pdf(docx_path, pdf_path):
-    """Convert DOCX file to PDF"""
+def convert_to_pdf(docx_path: str) -> str:
+    """
+    Convert DOCX file to PDF using LibreOffice in headless mode.
+    
+    Args:
+        docx_path: Path to the DOCX file to convert
+        
+    Returns:
+        str: Path to the generated PDF file
+        
+    Raises:
+        subprocess.CalledProcessError: If LibreOffice conversion fails
+        FileNotFoundError: If DOCX file or LibreOffice is not found
+        Exception: For other conversion errors
+    """
+    if not os.path.exists(docx_path):
+        raise FileNotFoundError(f"DOCX file not found: {docx_path}")
+    
+    # Get directory and filename without extension
+    docx_dir = os.path.dirname(docx_path)
+    docx_filename = os.path.basename(docx_path)
+    pdf_filename = os.path.splitext(docx_filename)[0] + '.pdf'
+    pdf_path = os.path.join(docx_dir, pdf_filename)
+    
     try:
-        convert(docx_path, pdf_path)
-        return True
+        # Run LibreOffice in headless mode for conversion
+        cmd = [
+            'libreoffice',
+            '--headless',
+            '--convert-to', 'pdf',
+            '--outdir', docx_dir,
+            docx_path
+        ]
+        
+        # Execute conversion
+        result = subprocess.run(
+            cmd,
+            capture_output=True,
+            text=True,
+            timeout=30  # 30 second timeout
+        )
+        
+        if result.returncode != 0:
+            error_msg = result.stderr.strip() if result.stderr else result.stdout.strip()
+            raise subprocess.CalledProcessError(
+                result.returncode, 
+                cmd, 
+                result.stdout, 
+                result.stderr
+            )
+        
+        # Check if PDF was created
+        if not os.path.exists(pdf_path):
+            raise Exception(f"PDF conversion completed but file not found: {pdf_path}")
+        
+        return pdf_path
+        
+    except subprocess.TimeoutExpired:
+        raise Exception(f"PDF conversion timed out after 30 seconds for file: {docx_path}")
+    
+    except subprocess.CalledProcessError as e:
+        error_details = e.stderr.strip() if e.stderr else e.stdout.strip()
+        raise Exception(f"LibreOffice conversion failed: {error_details}")
+    
     except Exception as e:
-        print(f"Error converting DOCX to PDF: {str(e)}")
-        return False
+        raise Exception(f"Error converting DOCX to PDF: {str(e)}")
 
 def generate_offer_letter(candidate, template):
     """Generate offer letter for a candidate"""
@@ -88,32 +146,40 @@ def generate_offer_letter(candidate, template):
         success = process_docx_template(template_path, temp_docx_path, data)
         
         if success:
-            # Convert DOCX to PDF
-            pdf_success = convert_docx_to_pdf(temp_docx_path, pdf_path)
-            
-            if pdf_success and os.path.exists(pdf_path):
-                # Save offer letter record with PDF only
-                with open(pdf_path, 'rb') as pdf_file:
-                    offer_letter = OfferLetter.objects.create(
-                        candidate_id=candidate.id,
-                        template_id=template.id,
-                        candidate_work_id=candidate.work_id,
-                        template_name=template.name,
-                        pdf_file=ContentFile(pdf_file.read(), pdf_filename)
-                    )
+            try:
+                # Convert DOCX to PDF using LibreOffice
+                pdf_path = convert_to_pdf(temp_docx_path)
                 
-                # Clean up temporary DOCX file
+                if os.path.exists(pdf_path):
+                    # Save offer letter record with PDF only
+                    with open(pdf_path, 'rb') as pdf_file:
+                        offer_letter = OfferLetter.objects.create(
+                            candidate_id=candidate.id,
+                            template_id=template.id,
+                            candidate_work_id=candidate.work_id,
+                            template_name=template.name,
+                            pdf_file=ContentFile(pdf_file.read(), pdf_filename)
+                        )
+                    
+                    # Clean up temporary files
+                    if os.path.exists(temp_docx_path):
+                        os.remove(temp_docx_path)
+                    if os.path.exists(pdf_path):
+                        os.remove(pdf_path)
+                    
+                    # Update candidate status
+                    candidate.status = 'offer_generated'
+                    candidate.save()
+                    
+                    return offer_letter
+                else:
+                    raise Exception(f"PDF file not created after conversion: {pdf_path}")
+                    
+            except Exception as conversion_error:
+                # Clean up temporary DOCX file on conversion failure
                 if os.path.exists(temp_docx_path):
                     os.remove(temp_docx_path)
-                
-                # Update candidate status
-                candidate.status = 'offer_generated'
-                candidate.save()
-                
-                return offer_letter
-            else:
-                print(f"PDF conversion failed for {candidate.work_id}")
-                return None
+                raise Exception(f"PDF conversion failed for {candidate.work_id}: {str(conversion_error)}")
         
         return None
         

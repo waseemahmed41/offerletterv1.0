@@ -18,13 +18,18 @@ RUN apt-get update \
         libpq-dev \
         libreoffice \
         libreoffice-writer \
+        fonts-dejavu \
         fonts-liberation \
-        fonts-dejavu-core \
+        fonts-liberation1 \
         fonts-liberation2 \
         fonts-noto-cjk \
         fonts-noto-color-emoji \
         curl \
-    && rm -rf /var/lib/apt/lists/*
+        ca-certificates \
+    && apt-get clean \
+    && rm -rf /var/lib/apt/lists/* \
+    && rm -rf /tmp/* \
+    && rm -rf /var/tmp/*
 
 # Install Python dependencies
 COPY requirements.txt .
