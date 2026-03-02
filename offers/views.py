@@ -278,6 +278,12 @@ def create_offer(request):
                         # Get email content from template
                         email_content = get_offer_letter_email_content(candidate, "T-HOME")
                         
+                        print(f"Preparing email to: {candidate.email}")
+                        print(f"Email subject: {email_content['subject']}")
+                        print(f"Email host: {settings.EMAIL_HOST}")
+                        print(f"Email port: {settings.EMAIL_PORT}")
+                        print(f"Email user: {settings.EMAIL_HOST_USER}")
+                        
                         email = EmailMessage(
                             email_content['subject'],
                             email_content['text_content'],  # Fallback text content
@@ -290,8 +296,15 @@ def create_offer(request):
                         email.body = email_content['html_content']
                         
                         # Attach the offer letter (PDF only)
-                        pdf_path = offer_letter.pdf_file.path
-                        email.attach_file(pdf_path)
+                        if offer_letter and offer_letter.pdf_file:
+                            pdf_path = offer_letter.pdf_file.path
+                            print(f"Attaching PDF: {pdf_path}")
+                            if os.path.exists(pdf_path):
+                                email.attach_file(pdf_path)
+                            else:
+                                print(f"Warning: PDF file not found at {pdf_path}")
+                        
+                        print("Sending email...")
                         email.send()
                         print("Email sent successfully")  # Debug line
                         
