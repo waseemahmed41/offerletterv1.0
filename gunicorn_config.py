@@ -12,8 +12,14 @@ bind = f"0.0.0.0:{os.getenv('PORT', '10000')}"
 workers = int(os.getenv('WEB_CONCURRENCY', '1'))
 worker_class = "sync"
 worker_connections = 1000
-timeout = 120
+timeout = 300  # 5 minutes for Google Docs API operations
+graceful_timeout = 300  # Allow graceful shutdown
 keepalive = 2
+
+# Graceful shutdown - Optimized for long operations
+max_requests = 500  # Lower to prevent memory buildup
+max_requests_jitter = 50
+preload_app = True
 
 # Logging
 accesslog = "-"
