@@ -1,35 +1,66 @@
-services:
-  # Web Service (Django + Gunicorn)
-  - type: web
-    name: offer-letter-web
-    runtime: python
-    plan: free
-    buildCommand: pip install -r requirements.txt && python manage.py collectstatic --noinput && python manage.py migrate
-    startCommand: gunicorn --workers 2 --timeout 60 offer_automation.wsgi:application
-    healthCheckPath: /admin/
-    envVars:
-      - key: REDIS_URL
-        fromService:
-          name: offer-letter-redis
-          type: redis
-          property: connectionString
+# Render Configuration for Offer Letter Automation Platform
 
-  # Celery Worker Service
-  - type: worker
-    name: offer-letter-worker
-    runtime: python
-    plan: free
-    buildCommand: pip install -r requirements.txt
-    startCommand: celery -A offer_automation worker --loglevel=info --concurrency=2
-    envVars:
-      - key: REDIS_URL
-        fromService:
-          name: offer-letter-redis
-          type: redis
-          property: connectionString
+## Environment Variables
+Set these in your Render dashboard:
 
-  # Redis Service
-  - type: redis
-    name: offer-letter-redis
-    plan: free
-    ipAllowList: []
+### Database Configuration
+- `DB_NAME`: Your PostgreSQL database name
+- `DB_USER`: Database username  
+- `DB_PASSWORD`: Database password
+- `DB_HOST`: Database hostname
+- `DB_PORT`: Database port (usually 5432)
+
+### Django Configuration
+- `SECRET_KEY`: Django secret key (generate with `python -c 'from django.core.management.utils import get_random_secret_key; print(get_random_secret_key())'`)
+- `DEBUG`: Set to `False` for production
+- `ALLOWED_HOSTS`: Your Render service URL (e.g., `your-service.onrender.com`)
+
+### Email Configuration
+- `SENDGRID_API_KEY`: Your SendGrid API key
+- `DEFAULT_FROM_EMAIL`: Default sender email
+- `EMAIL_HOST_USER`: SendGrid username
+- `EMAIL_HOST_PASSWORD`: SendGrid password
+
+### Google OAuth
+- `GOOGLE_OAUTH2_CLIENT_ID`: Google OAuth client ID
+- `GOOGLE_OAUTH2_CLIENT_SECRET`: Google OAuth client secret
+- `ALLOWED_EMAILS`: Comma-separated list of allowed emails
+
+### Other Settings
+- `WEB_CONCURRENCY`: Number of Gunicorn workers (default: 2)
+- `PORT`: Port number (Render sets this automatically)
+
+## Build Command
+```bash
+pip install -r requirements.txt
+python manage.py collectstatic --noinput
+python manage.py migrate --noinput
+```
+
+## Start Command
+```bash
+gunicorn --config gunicorn_production.py offer_automation.wsgi:application
+```
+
+## Render Service Configuration
+- **Type**: Web Service
+- **Runtime**: Python 3
+- **Build Command**: `pip install -r requirements.txt && python manage.py collectstatic --noinput && python manage.py migrate --noinput`
+- **Start Command**: `gunicorn --config gunicorn_production.py offer_automation.wsgi:application`
+- **Health Check Path**: `/admin/`
+- **Health Check Timeout**: 600 seconds (10 minutes)
+- **Auto-Deploy**: Disabled (manual deployment recommended)
+- **Instance Type**: Free (1 CPU, 512MB RAM)
+
+## Production Optimizations Applied
+- **Single Worker**: Prevents memory conflicts
+- **10-minute timeout**: Sufficient for Google Docs API
+- **Aggressive restarts**: Every 50 requests to prevent memory buildup
+- **Conservative memory limit**: 400MB to stay within 512MB constraint
+- **Manual deployment**: Prevents unexpected breaks
+
+## Additional Services Needed
+1. **Neon PostgreSQL Database**: For production data storage (external service)
+
+## Health Checks
+- Web Service: `/admin/` (should redirect to login)
