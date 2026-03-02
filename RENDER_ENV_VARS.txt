@@ -1,0 +1,60 @@
+# 🚀 RENDER ENVIRONMENT VARIABLES
+# Copy these to your Render service environment
+
+# Django Settings
+SECRET_KEY=xepky!j7je(q-veisa@)g(7prc*^(_@l6m=)9^1nn4sfjawv_k
+DEBUG=False
+ALLOWED_HOSTS=homeofferletterv1-0-1.onrender.com
+
+# Database Configuration (Neon PostgreSQL)
+DB_NAME=neondb
+DB_USER=neondb_owner
+DB_PASSWORD=npg_vRyhlNFuV16t
+DB_HOST=ep-raspy-lab-ai24kg9x-pooler.c-4.us-east-1.aws.neon.tech
+DB_PORT=5432
+
+# Email Configuration (Zoho Mail)
+EMAIL_HOST=smtp.zoho.in
+EMAIL_PORT=587
+EMAIL_USE_TLS=True
+EMAIL_HOST_USER=pratheek.kesara@thome.co.in
+EMAIL_HOST_PASSWORD=46FdYbYFHmUW
+DEFAULT_FROM_EMAIL=T-Home Careers <pratheek.kesara@thome.co.in>
+
+# Google Service Account Configuration
+GOOGLE_PROJECT_ID=t-home-emi-487909
+GOOGLE_SERVICE_ACCOUNT_EMAIL=t-home-emi@t-home-emi-487909.iam.gserviceaccount.com
+GOOGLE_PRIVATE_KEY="-----BEGIN PRIVATE KEY-----
+MIIEvQIBADANBgkqhkiG9w0BAQEFAASCBKcwggSjAgEAAoIBAQC5B3gQmL7YyyLc
+1FWrdR0BAfPva2v0Vwqe3UQP8RwfJtzcwxH7j41RZMhSWvHKUPOsPjRNRe7E+RDu
+CSvb1390sZ1G5ce/vvTrXPnMtk6RgvWtsx2F0z5xBl4kBa9EQXCfXyb+pyXc26f+
+F9Feo2RGtrAy+ewHcu8NZlCIawlUFqvXtWC4Saj7YXPdq5mlNWpxKpumfxTOCpOn
+TioOnWl0bTOSwJJIqpHzqQgY0JBX+Wsq2ieuMKwbyVhrlfQ5bMojhQCl8K6DGHSs
+/xuxmzfo6X/4rFZknyz99jfq9yDHz7ayZyiV88oKMLk1ssZR2TUGomHTw949l4lW
+lFJoNsK5AgMBAAECggEACvJRbN/wiIhqEVkBkYF9/AmGyj8Xda7xmqj6BhxsXr5w
+miHzTif1wx88h7zIKcFEzUen1fuBbwdSNFb4EItNB9UbOi7NdL9iI4uOXslZWBwA
+l2xtnnV7L/ohty1b62SYumEJgE7Yu1qGc46qrRfrDpDv1zA4gc9Pq8IGGTAF7wLH
+gcWHebX619C+zgr7Sh3uAntZ490hHq7SrDeGA/anQlvBqbVA7coHjjAK8vHExd57
+dYVYW87/pZZnkIL5RBRcxMRKluiXQU3WjKV7PyImAPTktllvWccBMdgljIKzvusY
+O27nWbm+beC47ahKoVqjk2ZrIoPPLwu0Ji73X1boYQKBgQDtc9CFCjeYwjuuy6+q
+U2zLp7oy2dBZsh8Q3qiJXs/MkOxBp7EAKHabxmqtIy2Mb8t2ITFAXidDWLC16Vzd
+CS+mwMuTzKVn48B0sDYvDUvbK8/OXWj14TI0LBCClFN7D+6+i3YmNqZt4wpD/g0z
+i0JW1KJfxNxeN2MZfrASVpKlSQKBgQDHe2FiObgIeopm+vzz6xT82NUXW8sB97Ee
+yNUE5hk7K05eFoL1gkVnHd6XgaGD7DC1Z6DB3Zs26Bm7DzgqFbzCphVkhCylOndS
+khnc78B4+XSAat9u5KAxkBifIHK8714pWzVtOiPFD3yAtr/Igu1/ucy8hUKJffed
+KUcascTh8QKBgAUEoo59NcmTqUE7ar31v2HabJPwiHeszP1FR1iH2WpgUa3dhl8T
+ne9Y07kI0cRz7q9gWQX0zwC6rLCjcAqtlK02h22uHMqOsa3/LzYlXBZhfJ6gbz0EK
+/k2d9MddrRn3rzr1pYyPMRs3ZhsjvlGtirxdCAVwGpwfHYgHZl8s1zKJAoGAVNyA
+CTFUwQagaj7L7VhMjWQRAubh7exZRSdat8LLaQh7Rjt9asQIkl16nClhdKW98u4q
+zU5hAXKrv5Ax7HVi38uXvjMcaw38RPwyVHMKBmzYyuisNJi+LVeHoepD5WxPOni6
+ucTKAsMbzAXygHJyZqu8FVb7f1I/THSK8yg9AYECgYEA1E4o4Dibwo/TpN2A3AmX
+kuhlrvG8t6puc66XDaWhVd6HTY+Veb0HuqbGB7A+1SxWsfij50BrsOZqLD7FidH7
+HAlKMX8s+59PEsply4wYgUEXG0jMjwW27q3G47JR6MvNZW/FHszBeHhowcWe1l+v
+Ul1EcwRYCQ9yn9vVNjvxf3o= -----END PRIVATE KEY-----"
+
+# File Upload Settings
+MAX_UPLOAD_SIZE=10485760
+ALLOWED_UPLOAD_EXTENSIONS=csv,xlsx,xls,docx
+
+# Performance Settings
+WEB_CONCURRENCY=2
