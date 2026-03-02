@@ -106,6 +106,7 @@ def generate_and_send_offer(request):
         try:
             data = json.loads(request.body)
             candidate_id = data.get('candidate_id')
+            print(f"Received request for candidate_id: {candidate_id}")
             
             # Convert string candidate_id to integer
             try:
@@ -114,16 +115,21 @@ def generate_and_send_offer(request):
                 return JsonResponse({'error': 'Invalid candidate ID'}, status=400)
             
             candidate = Candidate.objects.get(id=candidate_id)
+            print(f"Found candidate: {candidate.name}, role: {candidate.role}")
             
             # Get role-specific template
             template = get_template_for_role(candidate.role)
             if not template:
-                return JsonResponse({'error': 'No template found for this role'}, status=400)
+                return JsonResponse({'error': f'No template found for role: {candidate.role}'}, status=400)
+            
+            print(f"Found template: {template.name}, google_doc_id: {template.google_doc_id}")
             
             # Generate offer letter
             offer_letter = generate_offer_letter(candidate, template)
             if not offer_letter:
                 return JsonResponse({'error': 'Failed to generate offer letter'}, status=500)
+            
+            print("Offer letter generated successfully")
             
             # Send email with beautiful template
             try:

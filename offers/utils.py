@@ -118,6 +118,8 @@ def convert_to_pdf(docx_path: str) -> str:
 def generate_offer_letter(candidate, template):
     """Generate offer letter for a candidate using Google Docs API"""
     try:
+        print(f"Starting offer letter generation for {candidate.name}")
+        
         # Initialize Google Docs service
         google_service = GoogleDocsService()
         
@@ -132,14 +134,20 @@ def generate_offer_letter(candidate, template):
             '{{work_id}}': candidate.work_id,
         }
         
+        print(f"Template data prepared: {list(data.keys())}")
+        
         # Check if template has Google Doc ID
         if template.google_doc_id:
+            print(f"Using Google Docs API with ID: {template.google_doc_id}")
+            
             # Use Google Docs API with smart method (no storage quota, proper replacement)
             pdf_file = google_service.generate_offer_pdf_smart(
                 template.google_doc_id,
                 data,
                 candidate.name
             )
+            
+            print("PDF generated successfully via Google Docs API")
             
             # Save offer letter record with PDF
             offer_letter = OfferLetter.objects.create(
@@ -150,6 +158,8 @@ def generate_offer_letter(candidate, template):
                 pdf_file=pdf_file
             )
             
+            print(f"Offer letter record created with ID: {offer_letter.id}")
+            
             # Update candidate status
             candidate.status = 'offer_generated'
             candidate.save()
@@ -157,11 +167,14 @@ def generate_offer_letter(candidate, template):
             return offer_letter
         
         else:
+            print("No Google Doc ID found, using fallback method")
             # Fallback to local DOCX processing (if Google Doc ID not set)
             return generate_offer_letter_fallback(candidate, template, data)
             
     except Exception as e:
         print(f"Error generating offer letter: {str(e)}")
+        import traceback
+        traceback.print_exc()
         return None
 
 def generate_offer_letter_fallback(candidate, template, data):
