@@ -349,6 +349,7 @@
           <div class="form-group">
             <label for="{{ form.name.id_for_label }}" class="form-label">Template Name *</label>
             {{ form.name }}
+            <div class="help-text">Enter template name</div>
             {% if form.name.errors %}
               <div class="text-red-500 text-sm mt-1">
                 {{ form.name.errors }}
@@ -375,6 +376,7 @@
             <label for="{{ form.google_doc_id.id_for_label }}" class="form-label">Google Doc ID *</label>
             {{ form.google_doc_id }}
             <div class="help-text">
+              Enter Google Doc ID (e.g., 1iALpheZ7E4dE5ULqERe8Db0q7ZK32m0xEE9PrHPZz2o)<br>
               Get this from Google Docs URL: docs.google.com/document/d/<strong>DOC_ID</strong>/edit
             </div>
             {% if form.google_doc_id.errors %}

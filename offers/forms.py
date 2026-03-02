@@ -4,6 +4,21 @@ from django.utils import timezone
 import pytz
 from .models import Candidate, Template
 
+# Role choices for dropdown
+ROLE_CHOICES = [
+    ('', 'Select Role...'),
+    ('frontend', 'Frontend Developer'),
+    ('backend', 'Backend Developer'),
+    ('machine_learning', 'Machine Learning Engineer'),
+    ('full_stack', 'Full Stack Developer'),
+    ('ui_ux', 'UI/UX Designer'),
+    ('digital_marketing', 'Digital Marketing'),
+    ('pr', 'PR Specialist'),
+    ('content', 'Content Writer'),
+    ('video_editor', 'Video Editor'),
+    ('rnd', 'R&D Specialist'),
+]
+
 class CandidateForm(forms.ModelForm):
     phone_regex = RegexValidator(
         regex=r'^\+?1?\d{9,15}$',
@@ -64,7 +79,7 @@ class TemplateForm(forms.ModelForm):
     
     google_doc_id = forms.CharField(
         max_length=100,
-        required=False,
+        required=True,
         widget=forms.TextInput(attrs={
             'class': 'form-control',
             'placeholder': 'Enter Google Doc ID (e.g., 1iALpheZ7E4dE5ULqERe8Db0q7ZK32m0xEE9PrHPZz2o)',
