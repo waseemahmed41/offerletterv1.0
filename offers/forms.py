@@ -19,12 +19,11 @@ class CandidateForm(forms.ModelForm):
         })
     )
     
-    role = forms.CharField(
-        max_length=50,
+    role = forms.ChoiceField(
+        choices=ROLE_CHOICES,
         required=True,
-        widget=forms.TextInput(attrs={
+        widget=forms.Select(attrs={
             'class': 'form-control',
-            'placeholder': 'Enter role name (e.g., Frontend Developer, Backend Developer, UI/UX Designer)',
             'id': 'role-select'
         })
     )
