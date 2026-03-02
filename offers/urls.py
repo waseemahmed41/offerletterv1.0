@@ -14,6 +14,7 @@ urlpatterns = [
     path('candidates/', views.candidate_list, name='candidate_list'),
     path('candidate/<int:candidate_id>/', views.CandidateDetailView.as_view(), name='candidate_detail'),
     path('generate-and-send/', views.generate_and_send_offer, name='generate_and_send'),
+    path('task-status/<str:task_id>/', views.check_task_status, name='check_task_status'),
     path('get-next-work-id/', views.get_next_work_id, name='get_next_work_id'),
     path('cleanup-pdfs/', views.cleanup_pdfs, name='cleanup_pdfs'),
 ]

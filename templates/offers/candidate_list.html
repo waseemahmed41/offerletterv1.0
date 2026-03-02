@@ -825,7 +825,20 @@
                 candidate_id: currentCandidateId
             })
         })
-        .then(response => response.json())
+        .then(response => {
+            // Check if response is OK and is JSON
+            if (!response.ok) {
+                throw new Error(`Server returned ${response.status}: ${response.statusText}`);
+            }
+            
+            // Check content-type to ensure it's JSON
+            const contentType = response.headers.get('content-type');
+            if (!contentType || !contentType.includes('application/json')) {
+                throw new Error('Server returned non-JSON response. The application may be restarting.');
+            }
+            
+            return response.json();
+        })
         .then(data => {
             if (data.success) {
                 alert(data.message);
@@ -838,7 +851,17 @@
         })
         .catch(error => {
             console.error('Error:', error);
-            alert('Error generating and sending offer');
+            
+            // Provide specific error messages
+            if (error.message.includes('502')) {
+                alert('Server is temporarily unavailable (502 Bad Gateway). This usually happens during deployment or when the application is restarting. Please wait a moment and try again.');
+            } else if (error.message.includes('non-JSON response')) {
+                alert('Application is restarting or deploying. Please wait a moment and try again.');
+            } else if (error.message.includes('timeout')) {
+                alert('Request timed out. The offer generation is taking longer than expected. Please try again in a few minutes.');
+            } else {
+                alert('Error generating and sending offer: ' + error.message);
+            }
         })
         .finally(() => {
             generateBtn.disabled = false;

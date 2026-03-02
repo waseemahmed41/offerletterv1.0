@@ -10,6 +10,7 @@ from django.utils.decorators import method_decorator
 from django.views import View
 from django.utils import timezone
 from django.conf import settings
+from celery.result import AsyncResult
 import json
 import os
 
@@ -17,6 +18,7 @@ from .models import Candidate, Template, OfferLetter
 from .utils import generate_offer_letter, process_bulk_upload, get_template_for_role
 from .forms import CandidateForm, TemplateForm
 from .email_templates import get_offer_letter_email_content
+from .tasks import generate_offer_letter_task
 
 @login_required
 def dashboard(request):
@@ -101,7 +103,7 @@ def bulk_upload(request):
 @login_required
 @csrf_exempt
 def generate_and_send_offer(request):
-    """Generate and send offer letter for a candidate"""
+    """Generate and send offer letter for a candidate (async with Celery)"""
     if request.method == 'POST':
         try:
             data = json.loads(request.body)
@@ -114,86 +116,52 @@ def generate_and_send_offer(request):
             except (ValueError, TypeError):
                 return JsonResponse({'error': 'Invalid candidate ID'}, status=400)
             
-            candidate = Candidate.objects.get(id=candidate_id)
-            print(f"Found candidate: {candidate.name}, role: {candidate.role}")
-            
-            # Get role-specific template
-            template = get_template_for_role(candidate.role)
-            if not template:
-                return JsonResponse({'error': f'No template found for role: {candidate.role}'}, status=400)
-            
-            print(f"Found template: {template.name}, google_doc_id: {template.google_doc_id}")
-            
-            # Generate offer letter
-            offer_letter = generate_offer_letter(candidate, template)
-            if not offer_letter:
-                return JsonResponse({'error': 'Failed to generate offer letter'}, status=500)
-            
-            print("Offer letter generated successfully")
-            
-            # Send email with beautiful template
+            # Validate candidate exists
             try:
-                # Get email content from template
-                email_content = get_offer_letter_email_content(candidate, "Your Company")
+                candidate = Candidate.objects.get(id=candidate_id)
+                print(f"Found candidate: {candidate.name}, role: {candidate.role}")
+            except Candidate.DoesNotExist:
+                return JsonResponse({'error': 'Candidate not found'}, status=404)
+            
+            # Queue the task
+            task = generate_offer_letter_task.delay(candidate_id)
+            print(f"Queued task with ID: {task.id}")
+            
+            return JsonResponse({
+                'status': 'queued',
+                'task_id': task.id,
+                'message': f'Offer letter generation queued for {candidate.name}'
+            }, status=202)
                 
-                email = EmailMessage(
-                    email_content['subject'],
-                    email_content['text_content'],  # Fallback text content
-                    settings.DEFAULT_FROM_EMAIL,
-                    [candidate.email]
-                )
-                
-                # Add HTML content
-                email.content_subtype = 'html'
-                email.body = email_content['html_content']
-                
-                # Attach the offer letter (PDF only)
-                pdf_path = offer_letter.pdf_file.path
-                email.attach_file(pdf_path)
-                email.send()
-                
-                # Clean up PDF after successful email send
-                try:
-                    import os
-                    import stat
-                    if os.path.exists(pdf_path):
-                        # Try to remove file with different approaches
-                        try:
-                            os.remove(pdf_path)
-                            print(f"Cleaned up PDF: {pdf_path}")
-                        except PermissionError:
-                            # Try to change file permissions and remove
-                            os.chmod(pdf_path, stat.S_IWRITE)
-                            os.remove(pdf_path)
-                            print(f"Cleaned up PDF (with permission change): {pdf_path}")
-                        except Exception as e:
-                            print(f"Failed to remove PDF: {pdf_path} - Error: {e}")
-                            
-                    # Clear the pdf_file field in database
-                    offer_letter.pdf_file.delete(save=True)
-                except Exception as cleanup_error:
-                    print(f"Warning: Failed to cleanup PDF: {cleanup_error}")
-                
-                # Update status
-                candidate.status = 'offer_sent'
-                candidate.save()
-                offer_letter.sent_at = timezone.now()
-                offer_letter.save()
-                
-                return JsonResponse({
-                    'success': True,
-                    'message': f'Offer letter generated and sent to {candidate.email}'
-                })
-                
-            except Exception as e:
-                return JsonResponse({'error': f'Failed to send email: {str(e)}'}, status=500)
-                
-        except Candidate.DoesNotExist:
-            return JsonResponse({'error': 'Candidate not found'}, status=404)
         except Exception as e:
             return JsonResponse({'error': str(e)}, status=500)
     
     return JsonResponse({'error': 'Invalid request method'}, status=405)
+
+@login_required
+def check_task_status(request, task_id):
+    """Check the status of a Celery task"""
+    try:
+        result = AsyncResult(task_id)
+        
+        response_data = {
+            'task_id': task_id,
+            'status': result.status,
+            'ready': result.ready(),
+        }
+        
+        if result.ready():
+            if result.successful():
+                response_data['result'] = result.result
+            else:
+                response_data['error'] = str(result.info)
+        else:
+            response_data['progress'] = 'Task is still processing...'
+        
+        return JsonResponse(response_data)
+        
+    except Exception as e:
+        return JsonResponse({'error': f'Failed to check task status: {str(e)}'}, status=500)
 
 @login_required
 def candidate_list(request):
