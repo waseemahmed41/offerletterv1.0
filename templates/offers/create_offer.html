@@ -966,6 +966,18 @@
         .then(response => {
             console.log('Response status:', response.status);
             updateProgress(60); // Update progress to 60%
+            
+            // Check if response is OK
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            
+            // Check if response is JSON
+            const contentType = response.headers.get('content-type');
+            if (!contentType || !contentType.includes('application/json')) {
+                throw new Error('Invalid response format - expected JSON');
+            }
+            
             return response.json();
         })
         .then(data => {
@@ -1060,6 +1072,18 @@
     async function generateWorkId() {
         try {
             const response = await fetch('{% url "offers:get_next_work_id" %}');
+            
+            // Check if response is OK (not a redirect to login page)
+            if (!response.ok) {
+                throw new Error('Authentication required');
+            }
+            
+            // Check if response is JSON
+            const contentType = response.headers.get('content-type');
+            if (!contentType || !contentType.includes('application/json')) {
+                throw new Error('Invalid response format');
+            }
+            
             const data = await response.json();
             
             if (data.work_id) {
