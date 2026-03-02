@@ -594,7 +594,7 @@
                     {% endfor %}
                 {% endif %}
                 
-                <form method="post">
+                <form method="post" action="{% url 'offers:create_offer' %}">
                     {% csrf_token %}
                     
                     <!-- Work ID Preview -->
@@ -955,7 +955,8 @@
         formData.append('generate_send', 'true');
         
         // Submit via fetch
-        fetch(currentForm.action, {
+        const formAction = currentForm.action || '{% url "offers:create_offer" %}';
+        fetch(formAction, {
             method: 'POST',
             body: formData,
             headers: {

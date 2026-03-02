@@ -2,9 +2,9 @@
 # Copy these to your Render service environment
 
 # Django Settings
-SECRET_KEY=xepky!j7je(q-veisa@)g(7prc*^(_@l6m=)9^1nn4sfjawv_k
+SECRET_KEY=xepky!j7je(q-veisa@)g(7prc*^(_@l6m=)9^1nn4sfjawv_k)
 DEBUG=False
-ALLOWED_HOSTS=homeofferletterv1-0-1.onrender.com
+ALLOWED_HOSTS=thomeofferletterv1-0-1.onrender.com
 
 # Database Configuration (Neon PostgreSQL)
 DB_NAME=neondb
