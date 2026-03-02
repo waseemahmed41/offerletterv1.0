@@ -23,15 +23,50 @@ class GoogleDocsService:
         # Replace literal \n with actual newlines
         private_key = private_key.replace('\\n', '\n')
         
+        # Clean up any whitespace issues
+        lines = private_key.split('\n')
+        clean_lines = []
+        
+        for line in lines:
+            line = line.strip()
+            if line and not line.startswith('-----'):
+                # Remove any spaces within base64 content
+                clean_lines.append(line)
+            elif line.startswith('-----'):
+                clean_lines.append(line)
+        
+        # Reconstruct the key
+        private_key = '\n'.join(clean_lines)
+        
+        # Ensure proper base64 padding (fixes base64 corruption)
+        if '-----BEGIN PRIVATE KEY-----' in private_key:
+            # Extract just the base64 content
+            start = private_key.find('-----BEGIN PRIVATE KEY-----') + len('-----BEGIN PRIVATE KEY-----')
+            end = private_key.find('-----END PRIVATE KEY-----')
+            
+            if start > 0 and end > start:
+                base64_content = private_key[start:end].strip()
+                
+                # Fix base64 padding
+                padding_needed = len(base64_content) % 4
+                if padding_needed:
+                    base64_content += '=' * (4 - padding_needed)
+                
+                # Reconstruct key with fixed base64
+                private_key = f"-----BEGIN PRIVATE KEY-----\n{base64_content}\n-----END PRIVATE KEY-----"
+        
         # Ensure the private key is properly formatted
         if not private_key.startswith('-----BEGIN PRIVATE KEY-----'):
             raise ValueError("Invalid private key format: missing BEGIN PRIVATE KEY header")
         if not private_key.endswith('-----END PRIVATE KEY-----'):
             raise ValueError("Invalid private key format: missing END PRIVATE KEY footer")
         
-        # Debug: Show first and last few characters of the key
-        print(f"Private key starts with: {private_key[:30]}...")
-        print(f"Private key ends with: ...{private_key[-30:]}")
+        # Debug: Show key structure
+        lines = private_key.split('\n')
+        print(f"Private key has {len(lines)} lines")
+        print(f"First line: {lines[0]}")
+        print(f"Last line: {lines[-1]}")
+        print(f"Base64 content length: {len(lines[1]) if len(lines) > 2 else 'N/A'}")
         
         self.service_account_info = {
             "type": "service_account",
