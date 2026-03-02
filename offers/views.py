@@ -243,9 +243,10 @@ def create_offer(request):
             # Save candidate to Neon database
             candidate = form.save(commit=False)
             
-            # Convert role choice to display name
-            role_mapping = dict(Candidate.ROLE_CHOICES)
-            candidate.role = role_mapping.get(candidate.role, candidate.role)
+            # Convert role choice to display name if it's a choice value
+            if candidate.role in ['frontend', 'backend', 'machine_learning', 'full_stack', 'ui_ux', 'digital_marketing', 'pr', 'content', 'video_editor', 'rnd']:
+                role_mapping = dict(Candidate.ROLE_CHOICES)
+                candidate.role = role_mapping.get(candidate.role, candidate.role)
             
             candidate.created_by_id = request.user.id
             candidate.created_by_username = request.user.username
@@ -332,6 +333,8 @@ def create_offer(request):
                     messages.error(request, 'Failed to generate offer letter')
                     return redirect('offers:create_offer')
             else:
+                if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+                    return JsonResponse({'success': True, 'message': f'Candidate {candidate.name} created successfully!', 'status': 'created'})
                 messages.success(request, f'Candidate {candidate.name} created successfully!')
                 return redirect('offers:dashboard')
     else:
