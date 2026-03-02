@@ -2,7 +2,7 @@ from django import forms
 from django.core.validators import RegexValidator
 from django.utils import timezone
 import pytz
-from .models import Candidate
+from .models import Candidate, Template
 
 class CandidateForm(forms.ModelForm):
     phone_regex = RegexValidator(
@@ -19,10 +19,12 @@ class CandidateForm(forms.ModelForm):
         })
     )
     
-    role = forms.ChoiceField(
-        choices=[('', 'Select Role')] + list(Candidate.ROLE_CHOICES),
-        widget=forms.Select(attrs={
+    role = forms.CharField(
+        max_length=50,
+        required=True,
+        widget=forms.TextInput(attrs={
             'class': 'form-control',
+            'placeholder': 'Enter role name (e.g., Frontend Developer, Backend Developer, UI/UX Designer)',
             'id': 'role-select'
         })
     )
@@ -57,3 +59,42 @@ class CandidateForm(forms.ModelForm):
                 'placeholder': 'Enter email address'
             }),
         }
+
+class TemplateForm(forms.ModelForm):
+    """Form for creating/updating templates with Google Doc ID"""
+    
+    google_doc_id = forms.CharField(
+        max_length=100,
+        required=False,
+        widget=forms.TextInput(attrs={
+            'class': 'form-control',
+            'placeholder': 'Enter Google Doc ID (e.g., 1iALpheZ7E4dE5ULqERe8Db0q7ZK32m0xEE9PrHPZz2o)',
+            'help_text': 'Get this from Google Docs URL: docs.google.com/document/d/DOC_ID/edit'
+        })
+    )
+    
+    class Meta:
+        model = Template
+        fields = ['name', 'role', 'file', 'google_doc_id']
+        widgets = {
+            'name': forms.TextInput(attrs={
+                'class': 'form-control',
+                'placeholder': 'Enter template name'
+            }),
+            'role': forms.TextInput(attrs={
+                'class': 'form-control',
+                'placeholder': 'Enter role name (e.g., Frontend Developer, Backend Developer, UI/UX Designer)',
+                'help_text': 'Enter the role name as it should appear in the offer letter dropdown'
+            }),
+            'file': forms.FileInput(attrs={
+                'class': 'form-control',
+                'accept': '.docx,.doc'
+            })
+        }
+    
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        
+        # If editing existing template, populate google_doc_id
+        if self.instance and self.instance.pk:
+            self.fields['google_doc_id'].initial = self.instance.google_doc_id

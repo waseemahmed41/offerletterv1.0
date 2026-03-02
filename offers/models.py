@@ -81,7 +81,7 @@ class Candidate(models.Model):
                     number = 1
             
             return f"{prefix}{number:02d}"
-        return "0A20"  # Start from 0A20
+        return "0A25"  # Start from 0A25
 
 class Template(models.Model):
     ROLE_CHOICES = [
@@ -99,7 +99,8 @@ class Template(models.Model):
     
     name = models.CharField(max_length=100)
     role = models.CharField(max_length=20, choices=ROLE_CHOICES, blank=True, null=True, help_text="Leave blank for general template")
-    file = models.FileField(upload_to='templates/')
+    google_doc_id = models.CharField(max_length=100, blank=True, null=True, help_text="Google Doc ID for template")
+    file = models.FileField(upload_to='templates/', blank=True, null=True, help_text="Local DOCX file (backup)")
     is_active = models.BooleanField(default=True)
     created_by_id = models.IntegerField(null=True, blank=True)
     created_by_username = models.CharField(max_length=150, null=True, blank=True)

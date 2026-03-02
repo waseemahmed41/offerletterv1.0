@@ -15,7 +15,7 @@ import os
 
 from .models import Candidate, Template, OfferLetter
 from .utils import generate_offer_letter, process_bulk_upload, get_template_for_role
-from .forms import CandidateForm
+from .forms import CandidateForm, TemplateForm
 from .email_templates import get_offer_letter_email_content
 
 @login_required
@@ -360,6 +360,84 @@ def templates(request):
     }
     
     return render(request, 'offers/templates.html', context)
+
+@login_required
+def upload_template(request):
+    """Upload new template with Google Doc ID - Full access only"""
+    # Check if user has full access
+    full_access_users = ['waseem@thome', 'pratheek@thome']
+    if request.user.username not in full_access_users:
+        messages.error(request, 'You do not have permission to upload templates.')
+        return redirect('offers:templates')
+    
+    if request.method == 'POST':
+        form = TemplateForm(request.POST, request.FILES)
+        if form.is_valid():
+            template = form.save(commit=False)
+            template.created_by_id = request.user.id
+            template.created_by_username = request.user.username
+            template.save()
+            
+            messages.success(request, f'Template "{template.name}" uploaded successfully!')
+            return redirect('offers:templates')
+        else:
+            messages.error(request, 'Please correct the errors below.')
+    else:
+        form = TemplateForm()
+    
+    return render(request, 'offers/upload_template.html', {'form': form})
+
+@login_required
+def edit_template(request, template_id):
+    """Edit existing template - Full access only"""
+    # Check if user has full access
+    full_access_users = ['waseem@thome', 'pratheek@thome']
+    if request.user.username not in full_access_users:
+        messages.error(request, 'You do not have permission to edit templates.')
+        return redirect('offers:templates')
+    
+    template = get_object_or_404(Template, id=template_id)
+    
+    if request.method == 'POST':
+        form = TemplateForm(request.POST, request.FILES, instance=template)
+        if form.is_valid():
+            form.save()
+            messages.success(request, f'Template "{template.name}" updated successfully!')
+            return redirect('offers:templates')
+        else:
+            messages.error(request, 'Please correct the errors below.')
+    else:
+        form = TemplateForm(instance=template)
+    
+    return render(request, 'offers/edit_template.html', {'form': form, 'template': template})
+
+@login_required
+def delete_template(request, template_id):
+    """Delete template - Full access only"""
+    # Check if user has full access
+    full_access_users = ['waseem@thome', 'pratheek@thome']
+    if request.user.username not in full_access_users:
+        if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+            return JsonResponse({'success': False, 'error': 'You do not have permission to delete templates.'})
+        else:
+            messages.error(request, 'You do not have permission to delete templates.')
+            return redirect('offers:templates')
+    
+    template = get_object_or_404(Template, id=template_id)
+    
+    if request.method == 'POST':
+        template_name = template.name
+        template.delete()
+        
+        # Check if this is an AJAX request
+        if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+            return JsonResponse({'success': True, 'message': f'Template "{template_name}" deleted successfully'})
+        else:
+            messages.success(request, f'Template "{template_name}" deleted successfully!')
+            return redirect('offers:templates')
+    
+    # For GET requests, show the delete confirmation page
+    return render(request, 'offers/delete_template.html', {'template': template})
 
 @login_required
 def cleanup_pdfs(request):

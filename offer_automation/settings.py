@@ -199,6 +199,11 @@ SENDGRID_API_KEY = os.getenv('SENDGRID_API_KEY', '')
 GOOGLE_OAUTH2_CLIENT_ID = os.getenv('GOOGLE_OAUTH2_CLIENT_ID', '')
 GOOGLE_OAUTH2_CLIENT_SECRET = os.getenv('GOOGLE_OAUTH2_CLIENT_SECRET', '')
 
+# Google Service Account Configuration
+GOOGLE_PROJECT_ID = os.getenv('GOOGLE_PROJECT_ID', '')
+GOOGLE_SERVICE_ACCOUNT_EMAIL = os.getenv('GOOGLE_SERVICE_ACCOUNT_EMAIL', '')
+GOOGLE_PRIVATE_KEY = os.getenv('GOOGLE_PRIVATE_KEY', '')
+
 # Logging Configuration
 LOGGING = {
     'version': 1,

@@ -1,5 +1,4 @@
 import os
-import subprocess
 import pandas as pd
 from django.utils import timezone
 from docx import Document
@@ -7,6 +6,7 @@ from django.core.files.storage import default_storage
 from django.core.files.base import ContentFile
 from django.conf import settings
 from .models import Candidate, Template, OfferLetter
+from .google_service import GoogleDocsService
 
 def process_docx_template(template_path, output_path, data):
     """Process DOCX template with placeholder replacement"""
@@ -116,8 +116,11 @@ def convert_to_pdf(docx_path: str) -> str:
         raise Exception(f"Error converting DOCX to PDF: {str(e)}")
 
 def generate_offer_letter(candidate, template):
-    """Generate offer letter for a candidate"""
+    """Generate offer letter for a candidate using Google Docs API"""
     try:
+        # Initialize Google Docs service
+        google_service = GoogleDocsService()
+        
         # Prepare data for template
         data = {
             '{{name}}': candidate.name,
@@ -129,6 +132,41 @@ def generate_offer_letter(candidate, template):
             '{{work_id}}': candidate.work_id,
         }
         
+        # Check if template has Google Doc ID
+        if template.google_doc_id:
+            # Use Google Docs API with smart method (no storage quota, proper replacement)
+            pdf_file = google_service.generate_offer_pdf_smart(
+                template.google_doc_id,
+                data,
+                candidate.name
+            )
+            
+            # Save offer letter record with PDF
+            offer_letter = OfferLetter.objects.create(
+                candidate_id=candidate.id,
+                template_id=template.id,
+                candidate_work_id=candidate.work_id,
+                template_name=template.name,
+                pdf_file=pdf_file
+            )
+            
+            # Update candidate status
+            candidate.status = 'offer_generated'
+            candidate.save()
+            
+            return offer_letter
+        
+        else:
+            # Fallback to local DOCX processing (if Google Doc ID not set)
+            return generate_offer_letter_fallback(candidate, template, data)
+            
+    except Exception as e:
+        print(f"Error generating offer letter: {str(e)}")
+        return None
+
+def generate_offer_letter_fallback(candidate, template, data):
+    """Fallback method using local DOCX processing"""
+    try:
         # Generate temporary DOCX filename
         temp_docx_filename = f"temp_offer_{candidate.work_id}.docx"
         temp_docx_path = os.path.join(settings.MEDIA_ROOT, 'temp', temp_docx_filename)
@@ -184,12 +222,17 @@ def generate_offer_letter(candidate, template):
         return None
         
     except Exception as e:
-        print(f"Error generating offer letter: {str(e)}")
+        print(f"Error in fallback offer letter generation: {str(e)}")
         return None
 
 def get_template_for_role(role):
-    """Get appropriate template for a role"""
-    # Convert role display name to role key
+    """Get appropriate template for a role (supports custom roles)"""
+    # First try to find exact role match
+    template = Template.objects.filter(role__iexact=role, is_active=True).first()
+    if template:
+        return template
+    
+    # Convert role display name to role key for backward compatibility
     role_mapping = {
         'Frontend Developer': 'frontend',
         'Backend Developer': 'backend',
@@ -204,11 +247,14 @@ def get_template_for_role(role):
     
     role_key = role_mapping.get(role, None)
     
-    # First try to find role-specific template
+    # Try legacy role key mapping
     if role_key:
         template = Template.objects.filter(role=role_key, is_active=True).first()
         if template:
             return template
+    
+    # If no template found, return None
+    return None
     
     # Fallback to general template
     return Template.objects.filter(role__isnull=True, is_active=True).first()
