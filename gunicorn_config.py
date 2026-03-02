@@ -17,9 +17,13 @@ graceful_timeout = 300  # Allow graceful shutdown
 keepalive = 2
 
 # Graceful shutdown - Optimized for long operations
-max_requests = 500  # Lower to prevent memory buildup
-max_requests_jitter = 50
+max_requests = 200  # Very low to prevent memory buildup
+max_requests_jitter = 30
 preload_app = True
+
+# Memory optimization
+worker_memory_limit = 512 * 1024 * 1024  # 512MB limit
+worker_tmp_dir = "/dev/shm"  # Use RAM disk for temp files
 
 # Logging
 accesslog = "-"
