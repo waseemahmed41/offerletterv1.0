@@ -23,6 +23,16 @@ class GoogleDocsService:
         # Replace literal \n with actual newlines
         private_key = private_key.replace('\\n', '\n')
         
+        # Ensure the private key is properly formatted
+        if not private_key.startswith('-----BEGIN PRIVATE KEY-----'):
+            raise ValueError("Invalid private key format: missing BEGIN PRIVATE KEY header")
+        if not private_key.endswith('-----END PRIVATE KEY-----'):
+            raise ValueError("Invalid private key format: missing END PRIVATE KEY footer")
+        
+        # Debug: Show first and last few characters of the key
+        print(f"Private key starts with: {private_key[:30]}...")
+        print(f"Private key ends with: ...{private_key[-30:]}")
+        
         self.service_account_info = {
             "type": "service_account",
             "project_id": os.getenv('GOOGLE_PROJECT_ID'),
