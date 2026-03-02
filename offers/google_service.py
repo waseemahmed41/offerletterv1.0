@@ -178,12 +178,31 @@ class GoogleDocsService:
             drive_service = self._get_drive_service()
             
             # Export document as PDF
-            response = drive_service.files().export(
+            request = drive_service.files().export_media(
                 fileId=doc_id,
                 mimeType='application/pdf'
-            ).execute()
+            )
             
-            return response
+            # Get the response content
+            response = request.execute()
+            
+            # Handle different response formats
+            if hasattr(response, 'get'):
+                # For newer API versions
+                content = response.get()
+            elif hasattr(response, 'read'):
+                # For older API versions
+                content = response.read()
+            else:
+                # Direct response
+                content = response
+            
+            # Ensure we return bytes
+            if isinstance(content, str):
+                # Convert string to bytes if needed
+                content = content.encode('utf-8')
+            
+            return content
             
         except HttpError as error:
             raise Exception(f"Failed to export PDF: {error}")
