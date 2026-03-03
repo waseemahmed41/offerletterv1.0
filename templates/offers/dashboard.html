@@ -723,12 +723,27 @@
           
           <!-- Admin PDF Cleanup Button - Only for pratheek@thome and waseem@thome -->
           {% if user.username == 'pratheek@thome' or user.username == 'waseem@thome' %}
-          <div class="mt-4">
+          <div class="mt-4 space-x-2">
             <button onclick="cleanupPDFs()" class="inline-flex items-center px-4 py-2 bg-gradient-to-r from-red-500 to-pink-500 text-white rounded-xl border border-red-300 hover:from-red-600 hover:to-pink-600 transition-all duration-200 shadow-lg hover:shadow-xl">
               <i class="fas fa-trash-alt mr-2"></i>
               <span class="text-sm font-medium">Clean Up PDFs</span>
             </button>
             <p class="text-xs text-gray-500 mt-1">Remove all PDF files from server</p>
+          </div>
+          {% endif %}
+          
+          <!-- Export and Clean Buttons - Only for waseem and pratheek -->
+          {% if can_export %}
+          <div class="mt-4 space-x-2">
+            <a href="{% url 'offers:export_candidates_csv' %}" class="inline-flex items-center px-4 py-2 bg-gradient-to-r from-green-500 to-emerald-500 text-white rounded-xl border border-green-300 hover:from-green-600 hover:to-emerald-600 transition-all duration-200 shadow-lg hover:shadow-xl">
+              <i class="fas fa-download mr-2"></i>
+              <span class="text-sm font-medium">Export CSV</span>
+            </a>
+            <button onclick="cleanCandidates()" class="inline-flex items-center px-4 py-2 bg-gradient-to-r from-orange-500 to-red-500 text-white rounded-xl border border-orange-300 hover:from-orange-600 hover:to-red-600 transition-all duration-200 shadow-lg hover:shadow-xl">
+              <i class="fas fa-broom mr-2"></i>
+              <span class="text-sm font-medium">Clean Data</span>
+            </button>
+            <p class="text-xs text-gray-500 mt-1">Export candidates or clean all data</p>
           </div>
           {% endif %}
         </div>
@@ -1190,20 +1205,30 @@
     }
   }
   
-  // Helper function to get CSRF token
-  function getCookie(name) {
-    let cookieValue = null;
-    if (document.cookie && document.cookie !== '') {
-      const cookies = document.cookie.split(';');
-      for (let i = 0; i < cookies.length; i++) {
-        const cookie = cookies[i].trim();
-        if (cookie.substring(0, name.length + 1) === (name + '=')) {
-          cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
-          break;
+  // Clean all candidates data
+  function cleanCandidates() {
+    if (confirm('Are you sure you want to delete all candidates and reset work ID to OA20? This action cannot be undone!')) {
+      fetch('/dashboard/clean-candidates/', {
+        method: 'POST',
+        headers: {
+          'X-CSRFToken': getCookie('csrftoken'),
+          'Content-Type': 'application/json'
         }
-      }
+      })
+      .then(response => response.json())
+      .then(data => {
+        if (data.success) {
+          alert(data.message);
+          location.reload(); // Reload page to show updated stats
+        } else {
+          alert('Error: ' + data.error);
+        }
+      })
+      .catch(error => {
+        console.error('Error:', error);
+        alert('An error occurred while cleaning data');
+      });
     }
-    return cookieValue;
   }
 </script>
 {% endblock %}

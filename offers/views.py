@@ -11,7 +11,16 @@ from django.views import View
 from django.utils import timezone
 from django.conf import settings
 import json
+import csv
 import os
+import sys
+import stat
+import django
+
+# Setup Django
+sys.path.append(os.path.dirname(os.path.abspath(__file__)))
+os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'offer_automation.settings')
+django.setup()
 
 from .models import Candidate, Template, OfferLetter
 from .utils import generate_offer_letter, process_bulk_upload, get_template_for_role
@@ -39,6 +48,10 @@ def dashboard(request):
     today_local = timezone.now().astimezone(local_tz)
     today_date = today_local.strftime('%d %B %Y')
     
+    # Check if user is waseem or pratheek for export functionality
+    user = request.user
+    can_export = user.username in ['waseem', 'pratheek']
+    
     context = {
         'total_candidates': total_candidates,
         'pending_candidates': pending_candidates,
@@ -46,9 +59,83 @@ def dashboard(request):
         'offer_sent': offer_sent,
         'recent_candidates': recent_candidates,
         'today_date': today_date,
+        'can_export': can_export,
     }
     
     return render(request, 'offers/dashboard.html', context)
+
+@login_required
+def export_candidates_csv(request):
+    """Export all candidates to CSV for waseem and pratheek users"""
+    
+    # Check if user is authorized to export
+    user = request.user
+    if user.username not in ['waseem', 'pratheek']:
+        return JsonResponse({'error': 'Unauthorized to export data'}, status=403)
+    
+    if request.method != 'GET':
+        return JsonResponse({'error': 'Invalid request method'}, status=405)
+    
+    try:
+        # Get all candidates
+        candidates = Candidate.objects.order_by('-created_at')
+        
+        # Create CSV response
+        response = HttpResponse(content_type='text/csv')
+        response['Content-Disposition'] = f'attachment; filename="candidates_export_{timezone.now().strftime("%Y%m%d_%H%M%S")}.csv"'
+        
+        # Write CSV content
+        writer = csv.writer(response)
+        
+        # Write header
+        header = ['Work ID', 'Name', 'Email', 'Phone', 'Role', 'Letter Date', 'Joining Date', 'Status', 'Created At']
+        writer.writerow(header)
+        
+        # Write candidate data
+        for candidate in candidates:
+            writer.writerow([
+                candidate.work_id,
+                candidate.name,
+                candidate.email,
+                candidate.phone,
+                candidate.get_role_display(),
+                candidate.letter_date.strftime('%Y-%m-%d'),
+                candidate.joining_date.strftime('%Y-%m-%d'),
+                candidate.status,
+                candidate.created_at.strftime('%Y-%m-%d %H:%M')
+            ])
+        
+        return response
+        
+    except Exception as e:
+        return JsonResponse({'error': f'Failed to export CSV: {str(e)}'}, status=500)
+
+@login_required
+def clean_candidates_data(request):
+    """Clean all candidates data for waseem and pratheek users"""
+    
+    # Check if user is authorized to clean
+    user = request.user
+    if user.username not in ['waseem', 'pratheek']:
+        return JsonResponse({'error': 'Unauthorized to clean data'}, status=403)
+    
+    if request.method != 'POST':
+        return JsonResponse({'error': 'Invalid request method'}, status=405)
+    
+    try:
+        # Delete all candidates
+        deleted_count = Candidate.objects.all().delete()[0]
+        
+        # Note: Work ID will automatically start from OA20 on next creation
+        # due to the generate_work_id() function logic
+        
+        return JsonResponse({
+            'success': True,
+            'message': f'Successfully deleted {deleted_count} candidates. Next work ID will be OA20.'
+        })
+        
+    except Exception as e:
+        return JsonResponse({'error': f'Failed to clean data: {str(e)}'}, status=500)
 
 @login_required
 def bulk_upload(request):
@@ -154,8 +241,6 @@ def generate_and_send_offer(request):
                 
                 # Clean up PDF after successful email send
                 try:
-                    import os
-                    import stat
                     if os.path.exists(pdf_path):
                         # Try to remove file with different approaches
                         try:
@@ -310,8 +395,6 @@ def create_offer(request):
                         
                         # Clean up PDF after successful email send
                         try:
-                            import os
-                            import stat
                             if os.path.exists(pdf_path):
                                 # Try to remove file with different approaches
                                 try:
@@ -474,8 +557,6 @@ def cleanup_pdfs(request):
     
     if request.method == 'POST':
         try:
-            import os
-            import stat
             from django.conf import settings
             
             # Get the PDF directory

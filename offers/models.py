@@ -80,8 +80,8 @@ class Candidate(models.Model):
                     prefix = "1A"
                     number = 1
             
-            return f"{prefix}{number:02d}"
-        return "0A25"  # Start from 0A25
+            return f"OA{number:02d}"
+        return "OA20"  # Start from OA20
 
 class Template(models.Model):
     ROLE_CHOICES = [

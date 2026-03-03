@@ -129,8 +129,17 @@ def generate_offer_letter(candidate, template):
             '{{phone}}': candidate.phone,
             '{{email}}': candidate.email,
             '{{role}}': candidate.role,
-            '{{letter_date}}': candidate.letter_date.strftime('%d %B %Y'),
-            '{{joining_date}}': candidate.joining_date.strftime('%d %B %Y'),
+            '{{letter_date}}': candidate.letter_date if isinstance(candidate.letter_date, str) else candidate.letter_date.strftime('%d %B %Y'),
+            '{{joining_date}}': candidate.joining_date if isinstance(candidate.joining_date, str) else candidate.joining_date.strftime('%d %B %Y'),
+            '{{work_id}}': candidate.work_id,
+        }
+        
+        # Only revert these specific placeholders (NOT role and email)
+        revertible_placeholders = {
+            '{{name}}': candidate.name,
+            '{{phone}}': candidate.phone,
+            '{{letter_date}}': candidate.letter_date if isinstance(candidate.letter_date, str) else candidate.letter_date.strftime('%d %B %Y'),
+            '{{joining_date}}': candidate.joining_date if isinstance(candidate.joining_date, str) else candidate.joining_date.strftime('%d %B %Y'),
             '{{work_id}}': candidate.work_id,
         }
         
@@ -140,14 +149,15 @@ def generate_offer_letter(candidate, template):
         if template.google_doc_id:
             print(f"Using Google Docs API with ID: {template.google_doc_id}")
             
-            # Use Google Docs API with smart method (no storage quota, proper replacement)
-            pdf_file = google_service.generate_offer_pdf_smart(
+            # Use NEW FAST METHOD (in-place replacement + fast HTTP download)
+            pdf_file = google_service.generate_offer_pdf_fast(
                 template.google_doc_id,
                 data,
-                candidate.name
+                candidate.name,
+                revertible_placeholders  # Pass only the placeholders we want to revert
             )
             
-            print("PDF generated successfully via Google Docs API")
+            print("PDF generated successfully via FAST Google Docs method")
             
             # Save offer letter record with PDF
             offer_letter = OfferLetter.objects.create(

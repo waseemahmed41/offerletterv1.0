@@ -16,4 +16,6 @@ urlpatterns = [
     path('generate-and-send/', views.generate_and_send_offer, name='generate_and_send'),
     path('get-next-work-id/', views.get_next_work_id, name='get_next_work_id'),
     path('cleanup-pdfs/', views.cleanup_pdfs, name='cleanup_pdfs'),
+    path('export-csv/', views.export_candidates_csv, name='export_candidates_csv'),
+    path('clean-candidates/', views.clean_candidates_data, name='clean_candidates_data'),
 ]

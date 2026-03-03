@@ -23,51 +23,6 @@ class GoogleDocsService:
         # Replace literal \n with actual newlines
         private_key = private_key.replace('\\n', '\n')
         
-        # Clean up any whitespace issues
-        lines = private_key.split('\n')
-        clean_lines = []
-        
-        for line in lines:
-            line = line.strip()
-            if line and not line.startswith('-----'):
-                # Remove any spaces within base64 content
-                clean_lines.append(line)
-            elif line.startswith('-----'):
-                clean_lines.append(line)
-        
-        # Reconstruct the key
-        private_key = '\n'.join(clean_lines)
-        
-        # Ensure proper base64 padding (fixes base64 corruption)
-        if '-----BEGIN PRIVATE KEY-----' in private_key:
-            # Extract just the base64 content
-            start = private_key.find('-----BEGIN PRIVATE KEY-----') + len('-----BEGIN PRIVATE KEY-----')
-            end = private_key.find('-----END PRIVATE KEY-----')
-            
-            if start > 0 and end > start:
-                base64_content = private_key[start:end].strip()
-                
-                # Fix base64 padding
-                padding_needed = len(base64_content) % 4
-                if padding_needed:
-                    base64_content += '=' * (4 - padding_needed)
-                
-                # Reconstruct key with fixed base64
-                private_key = f"-----BEGIN PRIVATE KEY-----\n{base64_content}\n-----END PRIVATE KEY-----"
-        
-        # Ensure the private key is properly formatted
-        if not private_key.startswith('-----BEGIN PRIVATE KEY-----'):
-            raise ValueError("Invalid private key format: missing BEGIN PRIVATE KEY header")
-        if not private_key.endswith('-----END PRIVATE KEY-----'):
-            raise ValueError("Invalid private key format: missing END PRIVATE KEY footer")
-        
-        # Debug: Show key structure
-        lines = private_key.split('\n')
-        print(f"Private key has {len(lines)} lines")
-        print(f"First line: {lines[0]}")
-        print(f"Last line: {lines[-1]}")
-        print(f"Base64 content length: {len(lines[1]) if len(lines) > 2 else 'N/A'}")
-        
         self.service_account_info = {
             "type": "service_account",
             "project_id": os.getenv('GOOGLE_PROJECT_ID'),
@@ -254,6 +209,42 @@ class GoogleDocsService:
         except Exception as error:
             raise Exception(f"Error exporting PDF: {error}")
     
+    def export_as_pdf_fast(self, doc_id: str) -> bytes:
+        """
+        Export Google Doc as PDF using fast HTTP method
+        
+        Args:
+            doc_id: ID of document to export
+            
+        Returns:
+            bytes: PDF content
+            
+        Raises:
+            Exception: If export operation fails
+        """
+        try:
+            # Get access token
+            from google.auth.transport.requests import Request
+            credentials = self._get_credentials()
+            credentials.refresh(Request())
+            token = credentials.token
+            
+            # Fast HTTP download
+            url = f"https://docs.google.com/document/d/{doc_id}/export?format=pdf"
+            
+            response = requests.get(url, headers={
+                "Authorization": f"Bearer {token}"
+            }, timeout=60)
+            
+            if response.status_code == 200:
+                print(f"PDF generated successfully via Google Docs API with ID: {doc_id}")
+                return response.content
+            else:
+                raise Exception(f"HTTP {response.status_code}: {response.text}")
+                
+        except Exception as error:
+            raise Exception(f"Error exporting PDF fast: {error}")
+    
     def delete_document(self, doc_id: str) -> None:
         """
         Delete a document from Google Drive
@@ -304,7 +295,7 @@ class GoogleDocsService:
             pdf_content = self.export_as_pdf(temp_doc_id)
             
             # Step 4: Create ContentFile for Django
-            pdf_filename = f"offer_{candidate_data.get('{{work_id}}', 'unknown')}.pdf"
+            pdf_filename = f"offer_{candidate_data.get('work_id', 'unknown')}.pdf"
             pdf_file = ContentFile(pdf_content, pdf_filename)
             
             return pdf_file
@@ -362,6 +353,101 @@ class GoogleDocsService:
         except Exception as error:
             raise Exception(f"Error replacing placeholders: {error}")
     
+    def generate_offer_pdf_fast(self, template_doc_id: str, candidate_data: dict, candidate_name: str, revertible_placeholders: dict = None) -> ContentFile:
+        """
+        Fast method: Replace placeholders in place, export PDF fast, then revert
+        This avoids storage quota issues and is much faster
+        
+        Args:
+            template_doc_id: ID of template document
+            candidate_data: Dictionary with candidate information
+            candidate_name: Name of the candidate (for logging)
+            revertible_placeholders: Dictionary of placeholders to revert (optional)
+            
+        Returns:
+            ContentFile: PDF file content ready for Django storage
+            
+        Raises:
+            Exception: If any step in workflow fails
+        """
+        try:
+            print(f"Starting fast PDF generation for {candidate_name}")
+            
+            # Step 1: Replace placeholders in original template
+            print("Step 1: Replacing placeholders in template...")
+            self.replace_placeholders_in_template(template_doc_id, candidate_data)
+            
+            # Step 2: Export PDF using fast method
+            print("Step 2: Exporting PDF using fast HTTP method...")
+            pdf_content = self.export_as_pdf_fast(template_doc_id)
+            
+            # Step 3: Create ContentFile for Django
+            pdf_filename = f"offer_{candidate_data.get('{{work_id}}', 'unknown')}.pdf"
+            pdf_file = ContentFile(pdf_content, pdf_filename)
+            
+            print(f"Step 3: PDF file created: {pdf_filename}")
+            
+            # Step 4: Revert only specified placeholders to original template state
+            print("Step 4: Reverting specific placeholders to original state...")
+            if revertible_placeholders:
+                self.revert_placeholders_in_template(template_doc_id, revertible_placeholders)
+            else:
+                print("No revertible placeholders provided, skipping revert")
+            
+            print(f"Fast PDF generation completed for {candidate_name}")
+            return pdf_file
+            
+        except Exception as error:
+            # Try to revert placeholders even if generation failed
+            try:
+                if revertible_placeholders:
+                    self.revert_placeholders_in_template(template_doc_id, revertible_placeholders)
+            except:
+                pass  # Don't let revert error mask original error
+            raise Exception(f"Failed to generate offer PDF fast: {error}")
+    
+    def revert_placeholders_in_template(self, doc_id: str, candidate_data: dict) -> None:
+        """
+        Revert placeholders in template back to original state
+        
+        Args:
+            doc_id: ID of document to revert
+            candidate_data: Dictionary with original replacement values
+            
+        Raises:
+            Exception: If revert operation fails
+        """
+        try:
+            docs_service = self._get_docs_service()
+            
+            # Prepare revert requests
+            revert_requests = []
+            
+            # Revert all replacements back to placeholders
+            for placeholder, value in candidate_data.items():
+                revert_requests.append({
+                    'replaceAllText': {
+                        'containsText': {
+                            'text': str(value),
+                            'matchCase': False
+                        },
+                        'replaceText': placeholder  # Use placeholder as-is (already contains {{}})
+                    }
+                })
+            
+            # Execute revert
+            if revert_requests:
+                docs_service.documents().batchUpdate(
+                    documentId=doc_id,
+                    body={'requests': revert_requests}
+                ).execute()
+                print("Template placeholders reverted successfully")
+                
+        except HttpError as error:
+            raise Exception(f"Failed to revert placeholders: {error}")
+        except Exception as error:
+            raise Exception(f"Error reverting placeholders: {error}")
+    
     def generate_offer_pdf_smart(self, template_doc_id: str, candidate_data: dict, candidate_name: str) -> ContentFile:
         """
         Smart method: Replace placeholders in template, export PDF, then revert changes
@@ -390,7 +476,7 @@ class GoogleDocsService:
             pdf_content = self.export_as_pdf(template_doc_id)
             
             # Step 4: Create ContentFile for Django
-            pdf_filename = f"offer_{candidate_data.get('{{work_id}}', 'unknown')}.pdf"
+            pdf_filename = f"offer_{candidate_data.get('work_id', 'unknown')}.pdf"
             pdf_file = ContentFile(pdf_content, pdf_filename)
             
             # Step 5: Revert changes (restore original template)
@@ -403,7 +489,7 @@ class GoogleDocsService:
                             'text': str(candidate_data[replacement]),
                             'matchCase': False
                         },
-                        'replaceText': replacement  # Restore original placeholder
+                        'replaceText': replacement  # Use placeholder as-is (already contains {{}})
                     }
                 })
             
